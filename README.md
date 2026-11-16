@@ -4,6 +4,8 @@
 
 O advogado descreve a tarefa em português, envia as peças e recebe um **plano** antes de qualquer execução. Só depois do "sim" a Acta lê os documentos e entrega o resultado, com **documento, página e trecho literal** de cada informação e a lista do que ainda precisa ser conferido. A tarefa pode ser **salva como skill** e reaproveitada no próximo caso.
 
+> **Site do produto:** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
+>
 > Produto acadêmico da Actio para a APS de Ciência de Dados Aplicada ao Direito I (Insper, 2026/2). Todos os documentos em `samples/` são fictícios.
 
 ## O que entra e o que sai
@@ -141,6 +143,7 @@ acta/
 ├── static/             # interface web
 ├── samples/            # dois casos fictícios, três peças cada
 ├── avaliacao/          # gabarito, script de avaliação e teste contra o ChatGPT
+├── docs/               # site do produto (GitHub Pages)
 ├── tests/
 ├── app.py              # servidor FastAPI
 ├── relatorio-uso-ia.md
