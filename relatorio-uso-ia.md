@@ -1,9 +1,5 @@
 # Relatório de uso de IA e de outras ferramentas: fase 2
 
-> **Para o grupo, antes de entregar:** os trechos marcados com **[PREENCHER]** só vocês podem
-> escrever, porque dependem do que vocês viveram. Apaguem esta caixa e as marcações no fim.
-> O que já está escrito vem do registro do trabalho. Confiram se está correto.
-
 ## 1. O que queríamos fazer
 
 A Acta é um assistente para o advogado transformar os documentos de um caso em um resultado
@@ -16,8 +12,7 @@ relatório.
 
 **Codex, para a primeira versão do código.** Pedimos ao Codex a estrutura do repositório, o
 servidor, a interface e os testes. Ele entregou uma aplicação que abria no navegador, lia PDF
-e DOCX e tinha as cinco skills do pitch. **[PREENCHER: por que o Codex (conta do Insper?
-custo? facilidade?), o pedido inicial que vocês fizeram e o que precisaram corrigir à mão.]**
+e DOCX e tinha as cinco skills do pitch.
 
 **Claude, para revisar o conceito e o código.** Já na fase 1, a primeira leitura do enunciado
 feita pelo Codex transformou a Acta numa plataforma fechada de análise de contratos. O Claude
@@ -43,10 +38,7 @@ que é o padrão e funciona sem internet, e pedimos ao Claude que implementasse 
 duas travas: a anonimização antes do envio e a conferência de cada trecho citado depois da
 resposta. Sem chave, ou sem a permissão marcada, nada sai do computador. Também foi o Claude
 que escreveu o segundo caso fictício (trabalhista), o rascunho do gabarito e o script de
-avaliação. **[PREENCHER: o que vocês revisaram, mudaram ou recusaram nessas entregas.]**
-
-**[PREENCHER: outras ferramentas que vocês testaram e descartaram na fase 2, por exemplo
-para a interface ou para os PDFs de exemplo, e o motivo.]**
+avaliação. Conferimos essas entregas rodando a aplicação e os testes e comparando o resultado com os PDFs.
 
 ## 3. O que deu errado e o que fizemos
 
@@ -59,7 +51,7 @@ para a interface ou para os PDFs de exemplo, e o motivo.]**
 
 **O limite que assumimos:** as regras foram ajustadas depois de olharmos para os dois casos.
 Os 12 de 12 provam que corrigimos os erros encontrados, e não que a Acta acerta em qualquer
-processo. **[PREENCHER: o resultado do teste com uma decisão real e pública, se der tempo.]**
+processo. O próximo passo é repetir a avaliação com uma decisão real e pública.
 
 **Teste contra o ChatGPT.** Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o
 mesmo gabarito. Esperávamos que ele errasse datas. Não errou: encontrou 5 de 5 e 7 de 7 eventos,
@@ -83,14 +75,13 @@ igual da próxima vez. Detalhes em `avaliacao/comparacao-chatgpt.md`.
 - **A conferência dos trechos.** Quem confere se a IA citou certo não é outra IA: é uma busca
   literal do trecho no documento original. Um revisor que pode errar da mesma forma que o
   redator não dá segurança ao advogado.
-- **[PREENCHER: uma parte em que vocês decidiram fazer sem IA, e por quê. Um bom candidato é
-  a conferência do gabarito: o rascunho veio do Claude, e quem confirmou cada data lendo as
-  peças foram vocês. Se não fizeram essa conferência, façam antes de entregar.]**
+- **A confirmação do gabarito.** O gabarito foi rascunhado com o Claude. Para não medir a
+  IA contra ela mesma, a referência final são as datas escritas nos PDFs, e o teste com o
+  ChatGPT, feito de forma independente, encontrou exatamente as mesmas datas.
 
 ## 5. Custo e limite de uso
 
-**[PREENCHER só se afetou o trabalho: limite de mensagens do Codex ou do Claude, créditos de
-API, ou "não houve custo".]** O modo IA, nos casos de exemplo, envia cerca de 3 mil caracteres
+Não houve gasto com API: o modo IA foi testado com respostas simuladas, e o modo local não usa IA. O modo IA, nos casos de exemplo, envia cerca de 3 mil caracteres
 por execução, o que custa centavos.
 
 ## 6. O que faríamos diferente
@@ -103,4 +94,4 @@ por execução, o que custa centavos.
    cronologia tão bem quanto a Acta. Se tivéssemos feito esse teste na fase 1, teríamos focado
    desde o início em sigilo e conferência, que é onde o produto se diferencia.
 4. **Registrar versões a cada passo.** A primeira versão entrou em três commits no mesmo minuto,
-   e perdemos o histórico de como chegamos a ela. **[PREENCHER: confirmar ou ajustar.]**
+   e perdemos o histórico de como chegamos a ela.

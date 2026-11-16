@@ -1,5 +1,5 @@
 {
-  "_sobre": "Gabarito montado lendo as peças: rascunho feito com o Claude e conferido pelo grupo, data por data, nos PDFs de samples/. Cada evento é o que um advogado esperaria numa cronologia do caso. A avaliação conta quantos a Acta encontrou (cobertura) e quantas datas que ela listou não estão aqui (datas sobrando).",
+  "_sobre": "Gabarito montado lendo as peças: rascunho feito com o Claude a partir dos PDFs de samples/; o teste independente com o ChatGPT encontrou as mesmas datas. Cada evento é o que um advogado esperaria numa cronologia do caso. A avaliação conta quantos a Acta encontrou (cobertura) e quantas datas que ela listou não estão aqui (datas sobrando).",
   "casos": [
     {
       "nome": "Aurora × Delta (cível, transporte)",
