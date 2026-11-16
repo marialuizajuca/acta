@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Acta | Assistente jurídico configurável</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">acta.</div>
+    <p class="side-label">SKILLS</p>
+    <button class="skill active" data-skill="relatorio"><b>Relatório ao cliente</b><span>Resumo, atenção e próximos passos</span></button>
+    <button class="skill" data-skill="cronologia"><b>Cronologia processual</b><span>Datas, eventos e fontes</span></button>
+    <button class="skill" data-skill="comparacao"><b>Comparar alegações</b><span>Posições das partes</span></button>
+    <button class="skill" data-skill="organizacao"><b>Organizar documentos</b><span>Tipo, resumo e índice</span></button>
+    <button class="skill" data-skill="riscos"><b>Mapear riscos</b><span>Provas e pontos de atenção</span></button>
+    <div class="privacy"><b>Modo acadêmico local</b><span>Os arquivos não são enviados a serviços externos.</span></div>
+  </aside>
+
+  <main>
+    <header><div><span class="eyebrow">ACTIO · FASE 2</span><h1>Construa uma ferramenta a partir dos seus documentos.</h1><p>Envie arquivos, aprove o plano e confira as fontes do resultado.</p></div><span class="status">● funcionando localmente</span></header>
+
+    <section id="request" class="panel">
+      <div class="step"><span>1</span><div><b>Defina a tarefa</b><small>Explique como explicaria a outro advogado.</small></div></div>
+      <textarea id="task">Leia os documentos e prepare um relatório claro para o cliente, com situação atual, valores identificados e pontos de atenção.</textarea>
+      <div class="upload-zone" id="dropZone"><input id="files" type="file" multiple accept=".pdf,.docx,.txt,.md"><b>Selecione ou arraste documentos</b><span>PDF, DOCX, TXT ou MD · os originais não serão alterados</span></div>
+      <div id="fileList" class="file-list"></div>
+      <details><summary>Prompt de sistema</summary><textarea id="systemPrompt">Pergunte o objetivo jurídico, preserve o sigilo, indique as fontes, sinalize incertezas e proponha critérios de conferência. Não substitua a revisão do advogado.</textarea></details>
+      <button id="planBtn" class="primary">Gerar plano da ferramenta →</button>
+    </section>
+
+    <section id="plan" class="panel hidden">
+      <div class="step"><span>2</span><div><b>Revise o plano</b><small>A Acta só executa depois da aprovação.</small></div><em>Aguardando aprovação</em></div>
+      <h2 id="planTitle"></h2><p id="planObjective"></p><ol id="planSteps"></ol>
+      <div class="plan-grid"><div><h3>Permissões</h3><label><input id="allowRead" type="checkbox" checked> Ler os arquivos selecionados</label><label><input id="allowCreate" type="checkbox" checked> Criar resultado para download</label><label><input type="checkbox" disabled> Editar documentos originais</label><label><input id="allowExternal" type="checkbox"> Enviar dados para fora</label></div><div><h3>Critérios de teste</h3><ul id="planTests"></ul></div></div>
+      <div class="actions"><button id="backBtn" class="secondary">← Editar pedido</button><button id="runBtn" class="primary">Aprovar e executar</button></div>
+    </section>
+
+    <section id="running" class="panel hidden running"><div class="spinner"></div><h2>Construindo a saída</h2><p id="runningText">Extraindo o texto dos documentos…</p><div class="progress"><span></span></div></section>
+
+    <section id="output" class="panel hidden">
+      <div class="step"><span>3</span><div><b>Confira o resultado</b><small>Valide as informações nos documentos originais.</small></div><em class="ok">Testes concluídos</em></div>
+      <div id="result"></div>
+      <div class="checks"><b>Conferências automáticas</b><span>✓ fontes preservadas</span><span>✓ originais não alterados</span><span>✓ saída não vazia</span></div>
+      <div class="actions"><button id="restartBtn" class="secondary">← Nova execução</button><button id="downloadBtn" class="primary">Baixar resultado em Markdown</button></div>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+
