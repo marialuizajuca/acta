@@ -73,7 +73,7 @@ A comparação com o ChatGPT, na mesma tarefa e com o mesmo gabarito, está em [
 Requisitos: Python 3.11 ou mais recente e Git.
 
 ```bash
-git clone https://github.com/Mluiza25/acta.git
+git clone https://github.com/marialuizajuca/acta.git
 cd acta
 python -m venv .venv
 ```
