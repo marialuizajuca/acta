@@ -1,50 +1,93 @@
-# Relatório de uso de IA e outras ferramentas
+# Relatório de uso de IA e de outras ferramentas: fase 2
 
-## 1. Visão geral
+> **Para o grupo, antes de entregar:** os trechos marcados com **[PREENCHER]** só vocês podem
+> escrever, porque dependem do que vocês viveram. Apaguem esta caixa e as marcações no fim.
+> O que já está escrito vem do registro do trabalho. Confiram se está correto.
 
-A Acta foi desenvolvida na fase 2 como um produto funcional. O advogado envia documentos, escolhe uma skill, revisa um plano e autoriza a execução. A aplicação extrai o texto dos arquivos e produz resultados que podem ser conferidos e baixados.
+## 1. O que queríamos fazer
 
-## 2. Ferramentas utilizadas
+A Acta é um assistente para o advogado transformar os documentos de um caso em um resultado
+conferível, com plano aprovado antes da execução, fonte com página para cada informação e
+tarefas que viram skills reutilizáveis. Na fase 2, o desafio era construir o produto que
+vendemos na fase 1: código funcionando num repositório público, com README, licença e este
+relatório.
 
-### ChatGPT com Codex
+## 2. Ferramentas: o que testamos e o que ficou
 
-Foi utilizado para interpretar o enunciado, estruturar o repositório, escrever o código, criar os testes, produzir a documentação e revisar o funcionamento. Na fase 1, a primeira interpretação transformou a Acta em uma plataforma fechada de análise de contratos, o que estava incorreto.
+**Codex, para a primeira versão do código.** Pedimos ao Codex a estrutura do repositório, o
+servidor, a interface e os testes. Ele entregou uma aplicação que abria no navegador, lia PDF
+e DOCX e tinha as cinco skills do pitch. **[PREENCHER: por que o Codex (conta do Insper?
+custo? facilidade?), o pedido inicial que vocês fizeram e o que precisaram corrigir à mão.]**
 
-### Claude
+**Claude, para revisar o conceito e o código.** Já na fase 1, a primeira leitura do enunciado
+feita pelo Codex transformou a Acta numa plataforma fechada de análise de contratos. O Claude
+apontou que o enunciado pedia um assistente que permitisse ao advogado construir as próprias
+ferramentas, e mudamos a proposta.
 
-Foi utilizado para revisar o conceito da fase 1. O Claude identificou com mais clareza que o enunciado exigia um assistente configurável, capaz de permitir que o advogado criasse ferramentas, e não apenas um analisador de contratos pronto.
+Na fase 2, pedimos ao Claude uma revisão da versão do Codex antes da entrega. Ele rodou a
+aplicação com as três peças do caso Aurora × Delta e mostrou problemas que não tínhamos visto:
 
-### FastAPI, pypdf e python-docx
+- a cronologia tinha eventos cortados no meio da frase ("eletrônicos até 31 de janeiro de 2026.");
+- faltavam as enchentes de 22 a 29 de janeiro, o argumento central da defesa;
+- a decisão era classificada como "Defesa", porque o texto dela menciona a contestação;
+- a comparação de alegações mostrava o cabeçalho do PDF ("ACTA · CASO ACADÊMICO FICTÍCIO") como se fosse alegação.
 
-FastAPI fornece o servidor web. `pypdf` extrai texto de PDFs e `python-docx` extrai texto de documentos Word. A interface foi construída com HTML, CSS e JavaScript.
+Os quatro testes automáticos da primeira versão passavam. Eles usavam frases curtas
+escritas à mão, e não os PDFs do caso. **A lição: o teste precisa usar o mesmo material
+da demonstração.** Os testes novos (21) rodam sobre os PDFs de `samples/`.
 
-## 3. Comparação observada
+**A decisão sobre IA no produto.** A primeira versão não usava nenhum modelo de linguagem:
+eram regras fixas sobre o texto. Isso protegia o sigilo, mas não era o produto do pitch, em
+que o advogado descreve a tarefa e a IA monta o plano. Mantivemos as regras como modo local,
+que é o padrão e funciona sem internet, e pedimos ao Claude que implementasse o modo IA com
+duas travas: a anonimização antes do envio e a conferência de cada trecho citado depois da
+resposta. Sem chave, ou sem a permissão marcada, nada sai do computador. Também foi o Claude
+que escreveu o segundo caso fictício (trabalhista), o rascunho do gabarito e o script de
+avaliação. **[PREENCHER: o que vocês revisaram, mudaram ou recusaram nessas entregas.]**
 
-O Claude foi preferido na auditoria conceitual porque identificou o desalinhamento da primeira proposta. O Codex foi preferido na implementação, pois produziu e revisou o código, os arquivos do repositório e a interface funcional. A decisão final sobre o que manter continuou com o grupo.
+**[PREENCHER: outras ferramentas que vocês testaram e descartaram na fase 2, por exemplo
+para a interface ou para os PDFs de exemplo, e o motivo.]**
 
-## 4. Exemplos de solicitações feitas à IA
+## 3. O que deu errado e o que fizemos
 
-- Revisar se o produto atende ao conceito de assistente de programação por IA.
-- Criar um fluxo com prompt de sistema, skills, planejamento e permissões.
-- Implementar extração de texto de PDF e DOCX.
-- Identificar datas e relacionar eventos aos arquivos de origem.
-- Produzir um README que permita instalar e rodar o projeto.
-- Criar testes para as funções de análise.
+| O que tentamos | O que aconteceu | O que decidimos |
+|---|---|---|
+| Cronologia por linha do PDF | O PDF quebra a frase no fim da linha, e a cronologia saía com eventos cortados | Reconstruir os parágrafos antes de procurar datas, removendo cabeçalhos repetidos entre os documentos |
+| Classificar o documento pela primeira palavra-chave encontrada | A decisão citava a contestação e virava "Defesa" | Classificar pelo nome do arquivo e pelo título, com "decisão" antes de "contestação" |
+| Medir o acerto só com os testes | Os testes passavam e a demonstração tinha erros | Criar um gabarito para dois casos e medir a cobertura: de 9 para 12 eventos, de 12 |
+| Ver se a Acta funcionava fora do caso Aurora × Delta | Num caso trabalhista novo, a versão anterior classificou a reclamação como "Contrato" e a ata como "Documento geral" | Incluir esses tipos e manter o caso trabalhista como segundo exemplo e teste |
 
-## 5. Participação humana
+**O limite que assumimos:** as regras foram ajustadas depois de olharmos para os dois casos.
+Os 12 de 12 provam que corrigimos os erros encontrados, e não que a Acta acerta em qualquer
+processo. **[PREENCHER: o resultado do teste com uma decisão real e pública, se der tempo.]**
 
-O grupo definiu o problema, aprovou a reformulação, escolheu as funções da versão mínima e conferiu os resultados. A IA escreveu partes do código e da documentação, mas o grupo permaneceu responsável pelas decisões, pela demonstração e pela validação final.
+**Teste contra o ChatGPT.** **[PREENCHER com os números de `avaliacao/comparacao-chatgpt.md`:
+quantos eventos o ChatGPT encontrou, se inventou alguma data, se indicou página, se viu a
+divergência entre 24/08 e 28/08 no caso trabalhista.]**
 
-## 6. Limitações e transparência
+## 4. Onde decidimos não usar IA
 
-A aplicação não formula parecer jurídico e não substitui o advogado. A análise utiliza regras locais de classificação, busca de datas, valores e trechos relevantes. PDFs digitalizados como imagem não são processados sem OCR. Todos os resultados exigem conferência humana.
+- **A cronologia no modo local.** Datas e prazos estão escritos nos documentos, e uma regra
+  que os encontra é verificável linha por linha. Com isso, o advogado pode usar a Acta sem
+  enviar nada para fora, que é a condição de muitos escritórios.
+- **A conferência dos trechos.** Quem confere se a IA citou certo não é outra IA: é uma busca
+  literal do trecho no documento original. Um revisor que pode errar da mesma forma que o
+  redator não dá segurança ao advogado.
+- **[PREENCHER: uma parte em que vocês decidiram fazer sem IA, e por quê. Um bom candidato é
+  a conferência do gabarito: o rascunho veio do Claude, e quem confirmou cada data lendo as
+  peças foram vocês. Se não fizeram essa conferência, façam antes de entregar.]**
 
-## 7. Próximos passos
+## 5. Custo e limite de uso
 
-- Integrar um modelo de linguagem com credenciais protegidas.
-- Implementar OCR para documentos digitalizados.
-- Criar autenticação e espaços separados por escritório.
-- Salvar, editar e versionar skills.
-- Adicionar logs de auditoria e políticas de retenção.
-- Avaliar precisão com documentos jurídicos anonimizados.
+**[PREENCHER só se afetou o trabalho: limite de mensagens do Codex ou do Claude, créditos de
+API, ou "não houve custo".]** O modo IA, nos casos de exemplo, envia cerca de 3 mil caracteres
+por execução, o que custa centavos.
 
+## 6. O que faríamos diferente
+
+1. **Testar com o material da demonstração desde o primeiro dia.** Os testes da primeira versão
+   passavam com frases inventadas e não pegaram nenhum dos erros que a banca veria.
+2. **Medir antes de afirmar.** O gabarito trouxe o único número que podemos defender
+   ("de 9 para 12 eventos"). Teríamos começado por ele, antes de escrever código.
+3. **Registrar versões a cada passo.** A primeira versão entrou em três commits no mesmo minuto,
+   e perdemos o histórico de como chegamos a ela. **[PREENCHER: confirmar ou ajustar.]**
