@@ -34,6 +34,16 @@ O Claude também escreveu o segundo caso fictício (trabalhista), o rascunho do 
 
 Uma ressalva honesta: as regras foram ajustadas depois de olharmos para esses dois casos. O 12 de 12 mostra que corrigimos o que estava errado, não que a Acta acerta em qualquer processo. O próximo passo seria testar com uma decisão real e pública.
 
+## O site
+
+O site da fase 1 foi feito no ChatGPT. Quando fomos revisá-lo para a fase 2, comparando com o feedback geral da banca, apareceram dois problemas.
+
+O primeiro: o site abria numa tela de e-mail e senha. O feedback criticou exatamente isso em outros grupos, e o enunciado pedia um site que abrisse sem login. Trocamos a tela de login por uma página de apresentação, com um botão que entra direto na demonstração.
+
+O segundo foi mais sério. O ChatGPT tinha preenchido a demonstração com informações que não existem nos PDFs do caso: uma decisão datada de 20/05/2026 (a decisão não tem data), um relatório "atualizado em 22/05/2026", eventos de um processo que nem existe na tela de resultado ("distribuição em 12/03", "juntada do AR") e frases como "a defesa apresentou e-mails sobre as enchentes", quando a contestação só diz que a ré avisou por e-mail. A cronologia também deixava de fora as enchentes, que são o principal argumento da defesa. Foi o Claude que comparou cada tela com os PDFs e apontou essas diferenças.
+
+Trocamos tudo pelos resultados que a Acta realmente produz para os três PDFs e refizemos o PDF do relatório ao cliente. É a mesma lição da cronologia, só que no site: uma IA que escreve bem também inventa com naturalidade, e o único jeito de pegar isso é conferir na fonte. O site novo está em https://marialuizajuca.github.io/acta/.
+
 ## O teste contra o ChatGPT
 
 Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o mesmo pedido. A gente esperava que ele errasse datas. Não errou. Achou todos os eventos nos dois casos, indicou página, copiou os trechos certos, viu que as partes discordam sobre a data do pagamento (24/08 ou 28/08) e ainda calculou o vencimento dos prazos. No caso trabalhista, respondeu certo de primeira. Em acerto, empatou com a Acta. Na riqueza da resposta, foi melhor.
@@ -62,4 +72,5 @@ Não gastamos nada com API. O modo com IA foi testado com respostas simuladas, p
 1. **Testar com o material da demonstração desde o começo.** Nossos primeiros testes usavam frases inventadas e não pegaram nenhum dos erros que a banca ia ver.
 2. **Testar o concorrente antes de construir.** Só descobrimos na véspera que o ChatGPT acerta a cronologia tão bem quanto a Acta. Se tivéssemos feito esse teste na fase 1, teríamos focado em sigilo e conferência desde o início.
 3. **Medir antes de afirmar.** O gabarito foi o que nos deu um número para defender ("de 9 para 12 eventos"). Teria sido melhor começar por ele.
-4. **Registrar versões aos poucos.** A primeira versão entrou em três commits no mesmo minuto e perdemos o histórico de como chegamos nela.
+4. **Conferir o site com o mesmo cuidado do produto.** Revisamos o código com gabarito e testes, mas o site da fase 1 ficou com dados inventados até a véspera da fase 2.
+5. **Registrar versões aos poucos.** A primeira versão entrou em três commits no mesmo minuto e perdemos o histórico de como chegamos nela.
