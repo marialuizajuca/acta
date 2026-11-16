@@ -61,9 +61,19 @@ para a interface ou para os PDFs de exemplo, e o motivo.]**
 Os 12 de 12 provam que corrigimos os erros encontrados, e não que a Acta acerta em qualquer
 processo. **[PREENCHER: o resultado do teste com uma decisão real e pública, se der tempo.]**
 
-**Teste contra o ChatGPT.** **[PREENCHER com os números de `avaliacao/comparacao-chatgpt.md`:
-quantos eventos o ChatGPT encontrou, se inventou alguma data, se indicou página, se viu a
-divergência entre 24/08 e 28/08 no caso trabalhista.]**
+**Teste contra o ChatGPT.** Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o
+mesmo gabarito. Esperávamos que ele errasse datas. Não errou: encontrou 5 de 5 e 7 de 7 eventos,
+indicou página, copiou os trechos certos, viu a divergência entre 24/08 e 28/08 e ainda calculou
+os vencimentos dos prazos, de primeira. Em acerto, empatou com a Acta. Em riqueza da resposta,
+foi melhor.
+
+Isso mudou o nosso argumento. Deixamos de dizer que a Acta "acerta mais" e passamos a dizer
+o que ela garante e o ChatGPT não: (1) os nomes das partes, o CPF e o número do processo não
+saem do escritório, ou saem só como códigos; (2) a conferência de que cada trecho existe é feita
+pelo sistema, e não depende de o advogado reler tudo; (3) a resposta usa só os documentos. No
+caso trabalhista, o ChatGPT justificou um feriado de 2026 com uma portaria de 2025 buscada na
+internet: é o tipo de detalhe que passa despercebido. E o mesmo pedido vira uma skill, que roda
+igual da próxima vez. Detalhes em `avaliacao/comparacao-chatgpt.md`.
 
 ## 4. Onde decidimos não usar IA
 
@@ -89,5 +99,8 @@ por execução, o que custa centavos.
    passavam com frases inventadas e não pegaram nenhum dos erros que a banca veria.
 2. **Medir antes de afirmar.** O gabarito trouxe o único número que podemos defender
    ("de 9 para 12 eventos"). Teríamos começado por ele, antes de escrever código.
-3. **Registrar versões a cada passo.** A primeira versão entrou em três commits no mesmo minuto,
+3. **Testar o concorrente antes de construir.** Descobrimos na véspera que o ChatGPT acerta a
+   cronologia tão bem quanto a Acta. Se tivéssemos feito esse teste na fase 1, teríamos focado
+   desde o início em sigilo e conferência, que é onde o produto se diferencia.
+4. **Registrar versões a cada passo.** A primeira versão entrou em três commits no mesmo minuto,
    e perdemos o histórico de como chegamos a ela. **[PREENCHER: confirmar ou ajustar.]**

@@ -25,13 +25,28 @@ mesma tarefa, os mesmos documentos e o gabarito de `gabarito.json`.
 
 | Caso | Ferramenta | Eventos do gabarito encontrados | Datas erradas ou inventadas | Itens sem fonte | Pedidos repetidos | Viu a divergência de datas do pagamento? |
 |---|---|---|---|---|---|---|
-| Aurora × Delta | ChatGPT | _/5 | | | | — |
+| Aurora × Delta | ChatGPT | 5/5 | 0 | 0 | 0 | — |
 | Aurora × Delta | Acta (local) | 5/5 | 0 | 0 | 0 | — |
-| Marina × Pão Dourado | ChatGPT | _/7 | | | | |
+| Marina × Pão Dourado | ChatGPT | 7/7 | 0 | 0 | 0 | sim |
 | Marina × Pão Dourado | Acta (local) | 7/7 | 0 | 0 | 0 | sim |
 
-Preencha as linhas do ChatGPT com o que vocês observarem. Não ajuste os números: se o
-ChatGPT for melhor em algo, isso entra no relatório como aprendizado.
+Teste feito em 16/11/2026, com o ChatGPT comum, uma conversa nova para cada caso, os três PDFs
+anexados e o pedido acima. Ele respondeu de primeira nos dois casos.
+
+## O que observamos
+
+- **Empate em acerto.** O ChatGPT encontrou todos os eventos dos dois gabaritos, não inventou
+  datas, indicou página e copiou os trechos corretamente.
+- **O ChatGPT foi além da Acta** em três pontos: separou alegação de fato comprovado, escreveu
+  pendências mais completas e, no caso trabalhista, calculou os vencimentos dos prazos (art. 477
+  e oito dias úteis), deixando claro que eram cálculos condicionais.
+- **Um ponto a conferir no ChatGPT:** para justificar um feriado de outubro de 2026 no TRT-2, ele
+  citou uma portaria de 2025, buscada na internet. A conclusão pode até estar certa, mas a fonte
+  é de outro ano, e só um advogado atento percebe. Na Acta, nenhuma informação vem de fora dos
+  documentos enviados.
+- **O que a tabela não mostra:** o ChatGPT recebeu os nomes das partes, o CPF e o e-mail da
+  reclamante e o número do processo, como estavam. A conferência de que cada trecho existe
+  ficou por conta de quem leu a resposta.
 
 Outra diferença, que não aparece na tabela: no ChatGPT, os nomes das partes e o número do
 processo vão para fora do escritório como estão. Na Acta, ou nada sai (modo local), ou sai só

@@ -66,7 +66,12 @@ Comparamos a cronologia com um gabarito montado a partir da leitura das peças (
 
 **Limite desta medição:** são dois casos pequenos, e as regras foram ajustadas depois de olharmos para eles. Isso mostra que os erros encontrados foram corrigidos, e não que a Acta acerta 100% em qualquer processo. O teste com uma decisão real e pública é o próximo passo.
 
-A comparação com o ChatGPT, na mesma tarefa e com o mesmo gabarito, está em [`avaliacao/comparacao-chatgpt.md`](avaliacao/comparacao-chatgpt.md). O modo IA pode ser medido com `python avaliacao/avaliar.py --ia` quando houver chave.
+**E o ChatGPT?** Na mesma tarefa, com os mesmos PDFs, ele também encontrou todos os eventos
+dos dois casos e viu a divergência de datas. Em acerto, empata. A diferença da Acta está no
+que ela garante: os nomes, o CPF e o número do processo não saem do escritório, ou saem só como
+códigos; cada trecho citado é conferido pelo sistema no documento original; nada vem de fora dos
+autos; e a tarefa vira uma skill reutilizável. Detalhes em
+[`avaliacao/comparacao-chatgpt.md`](avaliacao/comparacao-chatgpt.md). O modo IA pode ser medido com `python avaliacao/avaliar.py --ia` quando houver chave.
 
 ## Como instalar e rodar
 
