@@ -1,18 +1,13 @@
 # acta.
 
-**Assistente para advogados construírem, a partir dos documentos do caso, a ferramenta de que precisam, sem programar e sem abrir mão do sigilo.**
+A Acta ajuda o advogado a transformar as peças de um processo em algo que ele consegue usar e conferir: uma cronologia, um relatório para o cliente, uma comparação entre as alegações das partes. Ele escreve o que precisa em português, vê o plano antes de qualquer coisa acontecer e recebe cada informação com o documento e a página de onde ela saiu. No fim, a Acta lista o que ainda precisa ser conferido. A tarefa pode ser salva como skill e usada de novo no próximo caso.
 
-O advogado descreve a tarefa em português, envia as peças e recebe um **plano** antes de qualquer execução. Só depois do "sim" a Acta lê os documentos e entrega o resultado, com **documento, página e trecho literal** de cada informação e a lista do que ainda precisa ser conferido. A tarefa pode ser **salva como skill** e reaproveitada no próximo caso.
+- **Site:** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
+- Projeto acadêmico do grupo Actio para a APS de Ciência de Dados Aplicada ao Direito I (Insper, 2026/2). Todos os documentos da pasta `samples/` são fictícios.
 
-> **Site do produto:** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
->
-> Produto acadêmico da Actio para a APS de Ciência de Dados Aplicada ao Direito I (Insper, 2026/2). Todos os documentos em `samples/` são fictícios.
+## Um exemplo
 
-## O que entra e o que sai
-
-**Entram** a petição inicial, a contestação e a decisão do caso fictício *Aurora Tecnologia × Logística Delta*, e o pedido "Monte a cronologia do caso".
-
-**Sai:**
+Mandamos para a Acta a petição inicial, a contestação e a decisão do caso fictício *Aurora Tecnologia × Logística Delta* e pedimos: "Monte a cronologia do caso". Este é um trecho do que voltou:
 
 | Data | Evento | Fonte |
 |---|---|---|
@@ -21,12 +16,13 @@ O advogado descreve a tarefa em português, envia as peças e recebe um **plano*
 | 18/02/2026 | A entrega ocorreu apenas em 18 de fevereiro de 2026. | 01-peticao-inicial, p. 1 |
 | 15/06/2026 | Designo audiência de conciliação para 15 de junho de 2026, às 14h. | 03-decisao, p. 1 |
 
-E, no fim, **o que conferir**:
-- 18/02/2026 aparece na inicial e na defesa: verificar se o fato é incontroverso.
-- Prazo de 15 dias para indicar provas: o documento não diz quando começa a correr.
-- A inicial cita contrato, comprovante e nota de débito que não foram enviados.
+Embaixo da tabela vem a lista do que conferir. Neste caso:
 
-No caso trabalhista de exemplo, a Acta também aponta a **divergência**: a reclamante diz que as verbas rescisórias foram pagas em 28/08/2026 e a reclamada diz 24/08/2026. É exatamente o ponto que define a multa do art. 477 da CLT.
+- a data de 18/02/2026 aparece na inicial e na defesa, então vale ver se o fato é incontroverso;
+- o prazo de 15 dias para indicar provas não diz quando começa a correr;
+- a inicial cita contrato, comprovante e nota de débito que não foram enviados.
+
+No caso trabalhista de exemplo, a Acta mostra que a reclamante diz ter recebido as verbas rescisórias em 28/08/2026 e a empresa diz que pagou em 24/08/2026. É justamente essa diferença que decide se cabe a multa do art. 477 da CLT.
 
 ## Como funciona
 
@@ -66,14 +62,11 @@ Comparamos a cronologia com um gabarito montado a partir da leitura das peças (
 | Documentos classificados errado | 3 de 6 | **0** |
 | Divergência de datas do pagamento (caso trabalhista) | não detectada | **detectada** |
 
-**Limite desta medição:** são dois casos pequenos, e as regras foram ajustadas depois de olharmos para eles. Isso mostra que os erros encontrados foram corrigidos, e não que a Acta acerta 100% em qualquer processo. O teste com uma decisão real e pública é o próximo passo.
+Uma ressalva: são dois casos pequenos, e ajustamos as regras depois de olhar para eles. O resultado mostra que corrigimos os erros que encontramos, não que a Acta acerta em qualquer processo. O próximo passo é testar com uma decisão real e pública.
 
-**E o ChatGPT?** Na mesma tarefa, com os mesmos PDFs, ele também encontrou todos os eventos
-dos dois casos e viu a divergência de datas. Em acerto, empata. A diferença da Acta está no
-que ela garante: os nomes, o CPF e o número do processo não saem do escritório, ou saem só como
-códigos; cada trecho citado é conferido pelo sistema no documento original; nada vem de fora dos
-autos; e a tarefa vira uma skill reutilizável. Detalhes em
-[`avaliacao/comparacao-chatgpt.md`](avaliacao/comparacao-chatgpt.md). O modo IA pode ser medido com `python avaliacao/avaliar.py --ia` quando houver chave.
+**E o ChatGPT?** Testamos. Com os mesmos PDFs e o mesmo pedido, ele também achou todos os eventos dos dois casos e viu a divergência de datas. Em acerto, empata. O que a Acta oferece de diferente é outra coisa: o nome do cliente, o CPF e o número do processo não saem do escritório (ou saem só como códigos), o próprio sistema confere se cada trecho citado existe, nada entra de fora dos autos e a tarefa fica salva como skill. Os números estão em [`avaliacao/comparacao-chatgpt.md`](avaliacao/comparacao-chatgpt.md).
+
+Quando houver uma chave de API, o modo IA pode ser medido do mesmo jeito, com `python avaliacao/avaliar.py --ia`.
 
 ## Como instalar e rodar
 
@@ -116,7 +109,8 @@ O `.env` está no `.gitignore` e nunca vai para o GitHub. Uma execução nos cas
 1. Clique em **Cronologia processual** e depois em **Usar o caso de exemplo (Aurora × Delta)**.
 2. **Gerar plano** → mostre os passos e as permissões. Com IA, marque "Enviar à IA" e mostre a tabela **O que sai do computador**.
 3. **Aprovar e executar** → mostre a fonte com página, o intervalo das enchentes e a lista **O que você ainda precisa conferir**.
-4. **Salvar como skill** → ela aparece em "Minhas skills". Escolha a skill salva **Preparação para audiência** e rode no caso trabalhista (`samples/04…06`) para mostrar a divergência de datas.
+4. **Salvar como skill** → ela aparece em "Minhas skills".
+5. Clique na skill **Preparação para audiência**, selecione os arquivos `04`, `05` e `06` da pasta `samples` e rode. A lista do que conferir mostra a divergência sobre a data do pagamento.
 
 ## Testes
 
@@ -155,10 +149,11 @@ acta/
 
 - **Não protocola, não envia e-mail e não altera os originais.** Quem age é o advogado.
 - **Não dá parecer nem escolhe tese.** Organiza o que está nos autos e aponta o que conferir.
-- **Não busca jurisprudência.** Uma fonte externa sem conferência é justamente o erro que queremos evitar. Fica para uma versão com base oficial integrada.
+- **Não busca jurisprudência.** Uma fonte de fora sem conferência é justamente o erro que queremos evitar. Isso fica para uma versão ligada a uma base oficial.
 
 ## Limitações conhecidas
 
+- O modo IA ainda não foi testado com uma chave de verdade, só com respostas simuladas nos testes automáticos.
 - PDFs digitalizados como imagem precisam de OCR, que ainda não existe.
 - O modo local usa regras: uma data escrita de forma incomum (por exemplo, "no quinto dia útil do mês seguinte") não é encontrada.
 - A anonimização reconhece padrões (CPF, CNPJ, e-mail, telefone, empresas com Ltda./S.A., nomes depois de "Autor:", "Ré:", "Sr." etc.). Um nome solto no texto, sem nenhum desses sinais, pode escapar. Por isso o advogado vê a lista do que será trocado e o texto exato que será enviado, antes de aprovar.

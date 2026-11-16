@@ -1,97 +1,65 @@
-# Relatório de uso de IA e de outras ferramentas: fase 2
+# Relatório de uso de IA (fase 2)
 
-## 1. O que queríamos fazer
+## O que a gente queria fazer
 
-A Acta é um assistente para o advogado transformar os documentos de um caso em um resultado
-conferível, com plano aprovado antes da execução, fonte com página para cada informação e
-tarefas que viram skills reutilizáveis. Na fase 2, o desafio era construir o produto que
-vendemos na fase 1: código funcionando num repositório público, com README, licença e este
-relatório.
+Na fase 1 vendemos a Acta como um assistente em que o advogado descreve uma tarefa, aprova um plano e recebe uma ferramenta pronta, com a fonte de cada informação. Na fase 2 o desafio era fazer isso funcionar de verdade e entregar num repositório público, com README, licença e este relatório.
 
-## 2. Ferramentas: o que testamos e o que ficou
+## Que ferramentas usamos e por quê
 
-**Codex, para a primeira versão do código.** Pedimos ao Codex a estrutura do repositório, o
-servidor, a interface e os testes. Ele entregou uma aplicação que abria no navegador, lia PDF
-e DOCX e tinha as cinco skills do pitch.
+**Codex.** A primeira versão do código saiu do Codex. Pedimos a estrutura do projeto, o servidor, a tela e os testes, e ele entregou uma aplicação que abria no navegador, lia PDF e Word e tinha as cinco skills que mostramos no pitch.
 
-**Claude, para revisar o conceito e o código.** Já na fase 1, a primeira leitura do enunciado
-feita pelo Codex transformou a Acta numa plataforma fechada de análise de contratos. O Claude
-apontou que o enunciado pedia um assistente que permitisse ao advogado construir as próprias
-ferramentas, e mudamos a proposta.
+**Claude.** Já tínhamos usado o Claude na fase 1, quando ele percebeu que o Codex tinha entendido o enunciado errado: a primeira versão da proposta virou uma plataforma fechada de análise de contratos, e o professor pedia uma ferramenta em que o próprio advogado constrói o que precisa. Mudamos a proposta por causa disso.
 
-Na fase 2, pedimos ao Claude uma revisão da versão do Codex antes da entrega. Ele rodou a
-aplicação com as três peças do caso Aurora × Delta e mostrou problemas que não tínhamos visto:
+Na fase 2 voltamos ao Claude para revisar a versão do Codex antes da entrega. Ele rodou a aplicação com as três peças do caso Aurora × Delta e encontrou problemas que a gente não tinha visto:
 
-- a cronologia tinha eventos cortados no meio da frase ("eletrônicos até 31 de janeiro de 2026.");
-- faltavam as enchentes de 22 a 29 de janeiro, o argumento central da defesa;
-- a decisão era classificada como "Defesa", porque o texto dela menciona a contestação;
-- a comparação de alegações mostrava o cabeçalho do PDF ("ACTA · CASO ACADÊMICO FICTÍCIO") como se fosse alegação.
+- alguns eventos da cronologia apareciam cortados no meio da frase, como "eletrônicos até 31 de janeiro de 2026.";
+- as enchentes de 22 a 29 de janeiro, que são o principal argumento da defesa, não apareciam;
+- a decisão era classificada como "Defesa", porque o texto dela fala da contestação;
+- na comparação de alegações, o cabeçalho do PDF aparecia como se fosse uma alegação.
 
-Os quatro testes automáticos da primeira versão passavam. Eles usavam frases curtas
-escritas à mão, e não os PDFs do caso. **A lição: o teste precisa usar o mesmo material
-da demonstração.** Os testes novos (21) rodam sobre os PDFs de `samples/`.
+O curioso é que os quatro testes da primeira versão passavam. Eles usavam frases curtas inventadas, e não os PDFs que a banca ia ver. Hoje são 21 testes, todos rodando em cima dos PDFs de exemplo.
 
-**A decisão sobre IA no produto.** A primeira versão não usava nenhum modelo de linguagem:
-eram regras fixas sobre o texto. Isso protegia o sigilo, mas não era o produto do pitch, em
-que o advogado descreve a tarefa e a IA monta o plano. Mantivemos as regras como modo local,
-que é o padrão e funciona sem internet, e pedimos ao Claude que implementasse o modo IA com
-duas travas: a anonimização antes do envio e a conferência de cada trecho citado depois da
-resposta. Sem chave, ou sem a permissão marcada, nada sai do computador. Também foi o Claude
-que escreveu o segundo caso fictício (trabalhista), o rascunho do gabarito e o script de
-avaliação. Conferimos essas entregas rodando a aplicação e os testes e comparando o resultado com os PDFs.
+**Uma decisão importante: usar IA dentro do produto.** A versão do Codex não chamava nenhum modelo de linguagem. Era tudo regra fixa sobre o texto. Isso protege o sigilo, mas não era o que tínhamos prometido. Decidimos manter as regras como modo padrão, que funciona sem internet, e pedimos ao Claude para criar um modo com IA que só liga com a permissão do advogado. Antes de qualquer envio, os nomes, CPFs e o número do processo viram códigos. Depois da resposta, o sistema procura cada trecho citado no documento original.
 
-## 3. O que deu errado e o que fizemos
+O Claude também escreveu o segundo caso fictício (trabalhista), o rascunho do gabarito e o script que mede o acerto. Conferimos tudo rodando a aplicação e os testes e comparando com os PDFs.
+
+## O que deu errado e o que fizemos
 
 | O que tentamos | O que aconteceu | O que decidimos |
 |---|---|---|
-| Cronologia por linha do PDF | O PDF quebra a frase no fim da linha, e a cronologia saía com eventos cortados | Reconstruir os parágrafos antes de procurar datas, removendo cabeçalhos repetidos entre os documentos |
-| Classificar o documento pela primeira palavra-chave encontrada | A decisão citava a contestação e virava "Defesa" | Classificar pelo nome do arquivo e pelo título, com "decisão" antes de "contestação" |
-| Medir o acerto só com os testes | Os testes passavam e a demonstração tinha erros | Criar um gabarito para dois casos e medir a cobertura: de 9 para 12 eventos, de 12 |
-| Ver se a Acta funcionava fora do caso Aurora × Delta | Num caso trabalhista novo, a versão anterior classificou a reclamação como "Contrato" e a ata como "Documento geral" | Incluir esses tipos e manter o caso trabalhista como segundo exemplo e teste |
+| Montar a cronologia linha por linha do PDF | O PDF quebra a frase no fim da linha e os eventos saíam cortados | Reconstruir os parágrafos antes de procurar as datas e ignorar os cabeçalhos repetidos |
+| Classificar o documento pela primeira palavra-chave | A decisão falava da contestação e virava "Defesa" | Olhar primeiro o nome do arquivo e o título |
+| Confiar só nos testes automáticos | Os testes passavam, mas a demonstração tinha erros | Montar um gabarito com as datas certas de dois casos e medir: a versão antiga achava 9 de 12 eventos, a nova acha 12 de 12 |
+| Testar com um caso diferente do nosso | No caso trabalhista, a versão antiga chamou a reclamação de "Contrato" e a ata de "Documento geral" | Incluir esses tipos e manter o caso trabalhista como segundo exemplo |
 
-**O limite que assumimos:** as regras foram ajustadas depois de olharmos para os dois casos.
-Os 12 de 12 provam que corrigimos os erros encontrados, e não que a Acta acerta em qualquer
-processo. O próximo passo é repetir a avaliação com uma decisão real e pública.
+Uma ressalva honesta: as regras foram ajustadas depois de olharmos para esses dois casos. O 12 de 12 mostra que corrigimos o que estava errado, não que a Acta acerta em qualquer processo. O próximo passo seria testar com uma decisão real e pública.
 
-**Teste contra o ChatGPT.** Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o
-mesmo gabarito. Esperávamos que ele errasse datas. Não errou: encontrou 5 de 5 e 7 de 7 eventos,
-indicou página, copiou os trechos certos, viu a divergência entre 24/08 e 28/08 e ainda calculou
-os vencimentos dos prazos, de primeira. Em acerto, empatou com a Acta. Em riqueza da resposta,
-foi melhor.
+## O teste contra o ChatGPT
 
-Isso mudou o nosso argumento. Deixamos de dizer que a Acta "acerta mais" e passamos a dizer
-o que ela garante e o ChatGPT não: (1) os nomes das partes, o CPF e o número do processo não
-saem do escritório, ou saem só como códigos; (2) a conferência de que cada trecho existe é feita
-pelo sistema, e não depende de o advogado reler tudo; (3) a resposta usa só os documentos. No
-caso trabalhista, o ChatGPT justificou um feriado de 2026 com uma portaria de 2025 buscada na
-internet: é o tipo de detalhe que passa despercebido. E o mesmo pedido vira uma skill, que roda
-igual da próxima vez. Detalhes em `avaliacao/comparacao-chatgpt.md`.
+Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o mesmo pedido. A gente esperava que ele errasse datas. Não errou. Achou todos os eventos nos dois casos, indicou página, copiou os trechos certos, viu que as partes discordam sobre a data do pagamento (24/08 ou 28/08) e ainda calculou o vencimento dos prazos. No caso trabalhista, respondeu certo de primeira. Em acerto, empatou com a Acta. Na riqueza da resposta, foi melhor.
 
-## 4. Onde decidimos não usar IA
+Isso mudou o nosso argumento. Paramos de dizer que a Acta "acerta mais" e passamos a falar do que ela garante e o ChatGPT não:
 
-- **A cronologia no modo local.** Datas e prazos estão escritos nos documentos, e uma regra
-  que os encontra é verificável linha por linha. Com isso, o advogado pode usar a Acta sem
-  enviar nada para fora, que é a condição de muitos escritórios.
-- **A conferência dos trechos.** Quem confere se a IA citou certo não é outra IA: é uma busca
-  literal do trecho no documento original. Um revisor que pode errar da mesma forma que o
-  redator não dá segurança ao advogado.
-- **A confirmação do gabarito.** O gabarito foi rascunhado com o Claude. Para não medir a
-  IA contra ela mesma, a referência final são as datas escritas nos PDFs, e o teste com o
-  ChatGPT, feito de forma independente, encontrou exatamente as mesmas datas.
+- o nome das partes, o CPF e o número do processo não saem do escritório, ou saem só como códigos;
+- quem confere se cada trecho existe é o sistema, e não o advogado relendo tudo;
+- a resposta usa só os documentos do caso. No teste, o ChatGPT justificou um feriado de 2026 com uma portaria de 2025 que achou na internet, e esse é o tipo de detalhe que passa batido;
+- o mesmo pedido vira uma skill e roda igual da próxima vez.
 
-## 5. Custo e limite de uso
+Os números estão em `avaliacao/comparacao-chatgpt.md`.
 
-Não houve gasto com API: o modo IA foi testado com respostas simuladas, e o modo local não usa IA. O modo IA, nos casos de exemplo, envia cerca de 3 mil caracteres
-por execução, o que custa centavos.
+## Onde preferimos não usar IA
 
-## 6. O que faríamos diferente
+- **A cronologia no modo padrão.** As datas e os prazos estão escritos nos documentos, e uma regra que os encontra dá para conferir linha por linha. Assim o advogado consegue usar a Acta sem mandar nada para fora, que é uma exigência comum em escritório.
+- **A conferência dos trechos.** Quem confere se a IA citou certo não é outra IA, é uma busca do trecho exato no documento. Um revisor que pode errar do mesmo jeito que o redator não dá segurança.
+- **A referência do gabarito.** O rascunho veio do Claude, mas a referência são as datas escritas nos PDFs. O ChatGPT, testado separadamente, encontrou exatamente as mesmas datas.
 
-1. **Testar com o material da demonstração desde o primeiro dia.** Os testes da primeira versão
-   passavam com frases inventadas e não pegaram nenhum dos erros que a banca veria.
-2. **Medir antes de afirmar.** O gabarito trouxe o único número que podemos defender
-   ("de 9 para 12 eventos"). Teríamos começado por ele, antes de escrever código.
-3. **Testar o concorrente antes de construir.** Descobrimos na véspera que o ChatGPT acerta a
-   cronologia tão bem quanto a Acta. Se tivéssemos feito esse teste na fase 1, teríamos focado
-   desde o início em sigilo e conferência, que é onde o produto se diferencia.
-4. **Registrar versões a cada passo.** A primeira versão entrou em três commits no mesmo minuto,
-   e perdemos o histórico de como chegamos a ela.
+## Custo e limite de uso
+
+Não gastamos nada com API. O modo com IA foi testado com respostas simuladas, porque ninguém do grupo tinha uma chave, e o modo padrão não usa IA. Pelas nossas contas, cada execução no modo IA manda uns 3 mil caracteres, o que custaria centavos.
+
+## O que faríamos diferente
+
+1. **Testar com o material da demonstração desde o começo.** Nossos primeiros testes usavam frases inventadas e não pegaram nenhum dos erros que a banca ia ver.
+2. **Testar o concorrente antes de construir.** Só descobrimos na véspera que o ChatGPT acerta a cronologia tão bem quanto a Acta. Se tivéssemos feito esse teste na fase 1, teríamos focado em sigilo e conferência desde o início.
+3. **Medir antes de afirmar.** O gabarito foi o que nos deu um número para defender ("de 9 para 12 eventos"). Teria sido melhor começar por ele.
+4. **Registrar versões aos poucos.** A primeira versão entrou em três commits no mesmo minuto e perdemos o histórico de como chegamos nela.

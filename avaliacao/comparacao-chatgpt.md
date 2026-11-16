@@ -25,13 +25,14 @@ mesma tarefa, os mesmos documentos e o gabarito de `gabarito.json`.
 
 | Caso | Ferramenta | Eventos do gabarito encontrados | Datas erradas ou inventadas | Itens sem fonte | Pedidos repetidos | Viu a divergência de datas do pagamento? |
 |---|---|---|---|---|---|---|
-| Aurora × Delta | ChatGPT | 5/5 | 0 | 0 | 0 | — |
+| Aurora × Delta | ChatGPT | 5/5 | 0 | 0 | não anotado | — |
 | Aurora × Delta | Acta (local) | 5/5 | 0 | 0 | 0 | — |
 | Marina × Pão Dourado | ChatGPT | 7/7 | 0 | 0 | 0 | sim |
 | Marina × Pão Dourado | Acta (local) | 7/7 | 0 | 0 | 0 | sim |
 
 Teste feito em 16/11/2026, com o ChatGPT comum, uma conversa nova para cada caso, os três PDFs
-anexados e o pedido acima. Ele respondeu de primeira nos dois casos.
+anexados e o pedido acima. No caso trabalhista ele acertou de primeira. No caso cível não
+anotamos se foi preciso pedir de novo.
 
 ## O que observamos
 
@@ -47,7 +48,3 @@ anexados e o pedido acima. Ele respondeu de primeira nos dois casos.
 - **O que a tabela não mostra:** o ChatGPT recebeu os nomes das partes, o CPF e o e-mail da
   reclamante e o número do processo, como estavam. A conferência de que cada trecho existe
   ficou por conta de quem leu a resposta.
-
-Outra diferença, que não aparece na tabela: no ChatGPT, os nomes das partes e o número do
-processo vão para fora do escritório como estão. Na Acta, ou nada sai (modo local), ou sai só
-o texto com os dados trocados por códigos (modo IA).
