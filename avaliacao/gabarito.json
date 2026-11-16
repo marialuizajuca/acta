@@ -1,0 +1,35 @@
+{
+  "_sobre": "Gabarito montado lendo as peças: rascunho feito com o Claude e conferido pelo grupo, data por data, nos PDFs de samples/. Cada evento é o que um advogado esperaria numa cronologia do caso. A avaliação conta quantos a Acta encontrou (cobertura) e quantas datas que ela listou não estão aqui (datas sobrando).",
+  "casos": [
+    {
+      "nome": "Aurora × Delta (cível, transporte)",
+      "arquivos": ["01-peticao-inicial-ficticia.pdf", "02-contestacao-ficticia.pdf", "03-decisao-ficticia.pdf"],
+      "eventos": [
+        {"data": "10/01/2026", "descricao": "Contrato de transporte celebrado"},
+        {"data": "22/01/2026", "descricao": "Início das enchentes que interromperam a rota (alegação da ré)"},
+        {"data": "31/01/2026", "descricao": "Prazo contratual de entrega"},
+        {"data": "18/02/2026", "descricao": "Entrega efetiva, reconhecida pelas duas partes"},
+        {"data": "15/06/2026", "descricao": "Audiência de conciliação designada"}
+      ],
+      "prazos": ["15 dias"],
+      "divergencias": [],
+      "pontos_controvertidos": 4
+    },
+    {
+      "nome": "Marina × Pão Dourado (trabalhista)",
+      "arquivos": ["04-reclamacao-trabalhista-ficticia.pdf", "05-contestacao-trabalhista-ficticia.pdf", "06-ata-audiencia-trabalhista-ficticia.pdf"],
+      "eventos": [
+        {"data": "03/02/2025", "descricao": "Admissão"},
+        {"data": "14/08/2026", "descricao": "Dispensa sem justa causa"},
+        {"data": "24/08/2026", "descricao": "Pagamento das verbas rescisórias, segundo a reclamada"},
+        {"data": "28/08/2026", "descricao": "Pagamento das verbas rescisórias, segundo a reclamante"},
+        {"data": "02/09/2026", "descricao": "Entrega das guias do seguro-desemprego (ano não escrito)"},
+        {"data": "20/10/2026", "descricao": "Audiência inicial"},
+        {"data": "10/03/2027", "descricao": "Audiência de instrução designada"}
+      ],
+      "prazos": ["8 dias"],
+      "divergencias": ["pag"],
+      "pontos_controvertidos": 3
+    }
+  ]
+}
