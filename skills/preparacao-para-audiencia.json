@@ -1,0 +1,21 @@
+{
+  "name": "Preparação para audiência",
+  "description": "Cronologia com prazos e pontos controvertidos, para levar à audiência",
+  "base": "cronologia",
+  "task": "Monte a cronologia do caso com todas as datas e prazos, indique o documento e a página de cada evento e destaque os pontos controvertidos fixados pelo juízo, que serão o foco da audiência.",
+  "system_prompt": "Use 'parte autora' e 'parte ré'. Destaque divergências de datas entre as partes. Não sugira teses: apenas organize os fatos.",
+  "steps": [
+    "Ler a inicial, a defesa e a última decisão.",
+    "Listar cada fato com data, documento e página.",
+    "Marcar as datas em que as partes divergem.",
+    "Listar os prazos em curso e o que falta para calculá-los.",
+    "Listar os pontos controvertidos fixados pelo juízo.",
+    "Fechar com o que o advogado precisa conferir antes da audiência."
+  ],
+  "tests": [
+    "Toda data da cronologia aparece no trecho citado.",
+    "Os pontos controvertidos batem com a decisão.",
+    "Nenhum prazo aparece sem a indicação de seu termo inicial."
+  ],
+  "created_at": "2026-11-16 18:00"
+}
