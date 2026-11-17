@@ -117,3 +117,5 @@
 .history-panel>div{display:grid;gap:3px;padding:12px 0;border-top:1px solid var(--line)}.history-panel>div:first-child{border-top:0}.history-panel time{font-size:11px;color:var(--muted)}.history-panel span{font-size:12px;color:var(--muted)}
 #stepper li.done{opacity:.6}
 @media(max-width:760px){.r-two,.ai-form{grid-template-columns:1fr}}
+.r-quote{display:block;font-size:12px;color:var(--ink);background:var(--soft);border-left:3px solid var(--line);padding:6px 8px;margin:8px 0;font-style:italic}.r-risks article{display:flex;flex-direction:column}
+.r-risks .r-badge{align-self:flex-start}
