@@ -1,6 +1,6 @@
 # acta.
 
-A Acta ajuda o advogado a transformar as peças de um processo em algo que ele consegue usar e conferir: uma cronologia, um relatório para o cliente, uma comparação entre as alegações das partes. Ele escreve o que precisa em português, vê o plano antes de qualquer coisa acontecer e recebe cada informação com o documento e a página de onde ela saiu. No fim, a Acta lista o que ainda precisa ser conferido. A tarefa pode ser salva como skill e usada de novo no próximo caso.
+A Acta é para o advogado de contencioso que acabou de receber um processo. Ela transforma as peças em algo que ele consegue usar e conferir: uma cronologia, um relatório para o cliente, uma comparação entre as alegações das partes. Ele escreve o que precisa em português, vê o plano antes de qualquer coisa acontecer e recebe cada informação com o documento e a página de onde ela saiu. No fim, a Acta lista o que ainda precisa ser conferido. A tarefa pode ser salva como skill e usada de novo no próximo caso.
 
 - **Site:** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
 - Projeto acadêmico do grupo Actio para a APS de Ciência de Dados Aplicada ao Direito I (Insper, 2026/2). Todos os documentos da pasta `samples/` são fictícios.
@@ -23,6 +23,20 @@ Embaixo da tabela vem a lista do que conferir. Neste caso:
 - a inicial cita contrato, comprovante e nota de débito que não foram enviados.
 
 No caso trabalhista de exemplo, a Acta mostra que a reclamante diz ter recebido as verbas rescisórias em 28/08/2026 e a empresa diz que pagou em 24/08/2026. É justamente essa diferença que decide se cabe a multa do art. 477 da CLT.
+
+## Perguntas que a banca e a turma fizeram na fase 1
+
+**O que é o "plano"?** Não é uma tese nem um robô agindo sozinho. É a lista do que a Acta vai fazer com os arquivos (ler, limpar o texto, achar datas e prazos, montar a cronologia, listar o que conferir), escrita em português para o advogado aprovar, corrigir ou recusar antes de qualquer execução.
+
+**A Acta protocola ou entra no PJe?** Não. Ela trabalha só com os arquivos enviados. Não acessa sites de tribunal, não envia e-mail e não altera os originais.
+
+**Acompanha prazos?** Encontra os prazos escritos nos documentos e avisa quando falta o termo inicial. Não consulta tribunais nem calcula o vencimento, que depende da intimação.
+
+**E quando depende de interpretação?** Mostra as duas versões, cada uma com a sua fonte, e marca o ponto para conferência. Não escolhe a tese.
+
+**Por que não o ChatGPT, o Claude ou o Harvey?** Testamos o ChatGPT e ele acertou tanto quanto a Acta (veja "Quanto ela acerta"). A diferença está nos dados, que não saem do escritório ou saem com códigos, e na conferência automática das citações. Não testamos o Harvey.
+
+**Por que só contencioso?** A banca sugeriu delimitar o escopo. Começamos pela rotina de entender um processo novo e explicar ao cliente onde ele está.
 
 ## Como funciona
 

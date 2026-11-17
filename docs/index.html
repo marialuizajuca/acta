@@ -9,30 +9,46 @@
 </head>
 <body>
   <div id="loginView"><main class="login-shell">
-    <section class="login-brand"><div class="logo logo-large">acta.</div><p class="eyebrow">Uma solução Actio</p><span class="business-badge">B2B · escritórios e departamentos jurídicos</span><h1>Você entende do Direito.<br>A Acta transforma isso em ferramenta.</h1><p class="lead">Você descreve a tarefa em português, aprova o plano e recebe o resultado com o documento e a página de cada informação. O que funcionar vira uma skill para o próximo caso.</p><div class="hero-steps"><span>Descreva</span><span>Planeje</span><span>Construa</span><span>Reutilize</span></div></section>
-    <section class="login-panel"><div class="login-card"><p class="eyebrow">Demonstração aberta</p><h2>Veja a Acta funcionando</h2><p class="card-text">Sem cadastro e sem senha. O caso é fictício e os resultados são os que a Acta tirou dos três PDFs do processo.</p><button id="loginButton" class="button button-dark button-wide">Entrar na demonstração →</button><button id="openCase" class="button button-light button-wide">Ir direto ao caso Aurora × Delta</button><div class="card-links"><a href="https://github.com/marialuizajuca/acta" target="_blank">Código no GitHub ↗</a><a href="#landing-exemplo">Ver um resultado aqui ↓</a></div><p class="fine-print">Protótipo acadêmico da disciplina Ciência de Dados Aplicada ao Direito I (Insper). Não use documentos reais.</p></div></section>
+    <section class="login-brand"><div class="logo logo-large">acta.</div><p class="eyebrow">Uma solução Actio</p><span class="business-badge">Para advogados de contencioso · escritórios e departamentos jurídicos</span><h1>Chegou um processo novo.<br>A Acta lê as peças por você.</h1><p class="lead">Você envia a inicial, a contestação e a decisão e escolhe o que precisa: cronologia, relatório para o cliente, comparação das alegações ou mapa de riscos. A Acta mostra os passos que vai seguir, espera você aprovar e entrega cada informação com o documento e a página de onde saiu. O que funcionar fica salvo para o próximo processo.</p><div class="hero-steps"><span>1. Envie as peças</span><span>2. Aprove o plano</span><span>3. Confira na fonte</span><span>4. Salve a skill</span></div></section>
+    <section class="login-panel"><div class="login-card"><p class="eyebrow">Demonstração aberta</p><h2>Veja a Acta funcionando</h2><p class="card-text">Sem cadastro e sem senha. Os casos são fictícios e os resultados são os que a Acta tirou dos PDFs de cada processo.</p><button id="loginButton" class="button button-dark button-wide">Entrar na demonstração →</button><button id="openCase" class="button button-light button-wide">Ir direto ao caso Aurora × Delta</button><div class="card-links"><a href="https://github.com/marialuizajuca/acta" target="_blank">Código no GitHub ↗</a><a href="#landing-exemplo">Ver um resultado aqui ↓</a></div><p class="fine-print">Protótipo acadêmico da disciplina Ciência de Dados Aplicada ao Direito I (Insper). Não use documentos reais.</p></div></section>
   </main><div class="landing">
   <section class="l-section l-who"><div class="l-wrap"><div class="l-grid3">
-    <div><p class="eyebrow">Para quem</p><h3>Advogados de qualquer área</h3><p>E escritórios que repetem as mesmas tarefas em todo processo novo: cronologia, relatório ao cliente, comparação das alegações.</p></div>
-    <div><p class="eyebrow">O problema</p><h3>Ler tudo de novo para conferir</h3><p>Uma IA comum até acerta, mas não diz de onde tirou cada frase, recebe o nome do cliente como está e pode trazer informação de fora dos autos.</p></div>
-    <div><p class="eyebrow">A ideia</p><h3>Plano antes, fonte em cada linha</h3><p>A Acta mostra o que vai fazer, espera a aprovação e entrega cada informação com documento e página, mais a lista do que falta conferir.</p></div>
+    <div><p class="eyebrow">Para quem</p><h3>Advogados de contencioso</h3><p>Começamos por uma rotina só: entender um processo que acabou de chegar e explicar ao cliente onde ele está. Testamos com um caso cível e um trabalhista.</p></div>
+    <div><p class="eyebrow">O problema</p><h3>Ler tudo de novo para conferir</h3><p>Montar a cronologia e o resumo de um processo é trabalho repetido. Uma IA comum até ajuda, mas não diz de onde tirou cada frase, recebe o nome do cliente como está e pode trazer informação de fora dos autos.</p></div>
+    <div><p class="eyebrow">Onde está o ganho de tempo</p><h3>Você confere em vez de reler</h3><p>Cada linha aponta documento e página, e a Acta lista no fim o que ainda falta: prazos sem termo inicial, datas em que as partes divergem, documentos citados que não vieram.</p></div>
   </div></div></section>
 
   <section class="l-section" id="landing-exemplo"><div class="l-wrap">
-    <p class="eyebrow">Exemplo real</p><h2>O que a Acta devolveu para três PDFs de um caso fictício</h2>
-    <p class="l-sub">Pedido: "Monte a cronologia do caso." Entrada: petição inicial, contestação e decisão do caso Aurora Tecnologia × Logística Delta.</p>
-    <div class="l-panel"><table class="l-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>
+    <p class="eyebrow">Exemplo real, em dois casos</p><h2>O que a Acta devolveu, sem edição</h2>
+    <p class="l-sub">Pedido nos dois casos: "Monte a cronologia do caso." Cada caso tem três PDFs fictícios, que estão no repositório para qualquer pessoa rodar e conferir. A tabela mostra um trecho do resultado.</p>
+    <div class="l-tabs"><button class="l-tab on" data-case="civ">Cível · Aurora × Delta</button><button class="l-tab" data-case="tra">Trabalhista · Marina × Pão Dourado</button></div>
+    <div class="l-panel l-case" id="case-civ"><table class="l-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>
       <tr><td>10/01/2026</td><td>Em 10 de janeiro de 2026, as partes celebraram contrato para transporte e entrega de 120 equipamentos eletrônicos até 31 de janeiro de 2026.</td><td>Petição inicial, p. 1</td></tr>
       <tr><td>22 a 29/01/2026<br><span class="l-badge">ano inferido</span></td><td>…sustenta que o atraso decorreu de enchentes que interromperam a rota entre 22 e 29 de janeiro.</td><td>Contestação, p. 1</td></tr>
       <tr><td>18/02/2026</td><td>A entrega ocorreu apenas em 18 de fevereiro de 2026.</td><td>Petição inicial, p. 1</td></tr>
       <tr><td>Prazo: 15 dias</td><td>As partes deverão indicar provas em 15 dias.</td><td>Decisão, p. 1</td></tr>
       <tr><td>15/06/2026</td><td>Designo audiência de conciliação para 15 de junho de 2026, às 14h.</td><td>Decisão, p. 1</td></tr>
-    </tbody></table>
-    <div class="l-check"><b>O que você ainda precisa conferir</b><ul><li>18/02/2026 aparece na inicial e na defesa: ver se o fato é incontroverso.</li><li>O prazo de 15 dias não diz a partir de quando corre: conferir a intimação.</li><li>A inicial cita contrato, comprovante de entrega e nota de débito que não foram enviados.</li></ul></div></div>
+    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li>18/02/2026 aparece na inicial e na defesa: ver se o fato é incontroverso.</li><li>O prazo de 15 dias não diz a partir de quando corre: conferir a intimação.</li><li>A inicial cita contrato, comprovante de entrega e nota de débito que não foram enviados.</li></ul></div></div>
+    <div class="l-panel l-case is-hidden" id="case-tra"><table class="l-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>
+      <tr><td>03/02/2025</td><td>A reclamante foi admitida em 03/02/2025 como atendente, com jornada contratual das 6h às 14h.</td><td>Reclamação, p. 1</td></tr>
+      <tr><td>14/08/2026</td><td>Em 14 de agosto de 2026, a reclamante foi dispensada sem justa causa, com aviso prévio indenizado.</td><td>Reclamação, p. 1</td></tr>
+      <tr><td>24/08/2026</td><td>…afirma que as verbas rescisórias foram pagas em 24 de agosto de 2026, dentro do prazo legal.</td><td>Contestação, p. 1</td></tr>
+      <tr><td>28/08/2026</td><td>As verbas rescisórias só foram pagas em 28 de agosto de 2026, depois do prazo de dez dias previsto no art. 477, § 6º, da CLT.</td><td>Reclamação, p. 1</td></tr>
+      <tr><td>02/09/2026<br><span class="l-badge">ano inferido</span></td><td>As guias do seguro-desemprego foram entregues no dia 2 de setembro.</td><td>Reclamação, p. 1</td></tr>
+      <tr><td>Prazo: 8 dias</td><td>A reclamada deverá juntar os cartões de ponto e o comprovante de pagamento no prazo de 8 dias.</td><td>Ata, p. 1</td></tr>
+      <tr><td>10/03/2027</td><td>Designo audiência de instrução para 10 de março de 2027, às 9h30.</td><td>Ata, p. 1</td></tr>
+    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li><b>Divergência:</b> a reclamante diz que recebeu as verbas em 28/08/2026 e a empresa diz que pagou em 24/08/2026. É essa data que decide a multa do art. 477, § 8º.</li><li>O prazo de 8 dias não diz a partir de quando corre: conferir a intimação.</li><li>A reclamação cita termo de rescisão, comprovante bancário e mensagens de WhatsApp que não foram enviados.</li></ul></div></div>
   </div></section>
 
   <section class="l-section"><div class="l-wrap">
-    <p class="eyebrow">A pergunta que todo advogado faz</p><h2>"Por que não usar o ChatGPT?"</h2>
+    <p class="eyebrow">O que é o "plano"</p><h2>Uma lista de passos que você aprova antes</h2>
+    <p class="l-sub">O plano não é uma tese jurídica e não é um robô agindo sozinho. É a lista do que a Acta vai fazer com os seus arquivos, escrita em português, para você aprovar, corrigir ou recusar. Este é o plano da cronologia:</p>
+    <div class="l-grid2"><div class="l-panel"><ol class="l-plan"><li>Ler só os arquivos que você autorizou.</li><li>Tirar os cabeçalhos repetidos e juntar as frases que o PDF quebrou.</li><li>Identificar o tipo de cada peça (inicial, defesa, decisão).</li><li>Achar datas, prazos e valores, cada um com documento e página.</li><li>Montar a cronologia em ordem de data.</li><li>Listar o que você ainda precisa conferir.</li></ol></div>
+    <div class="l-panel"><h3>O que fica bloqueado</h3><p>Editar os documentos originais, protocolar, mandar e-mail e acessar PJe ou sites de tribunal. Enviar texto para uma IA externa só acontece se você marcar a permissão, e mesmo assim com nomes, CPF e número do processo trocados por códigos.</p></div></div>
+  </div></section>
+
+  <section class="l-section"><div class="l-wrap">
+    <p class="eyebrow">A pergunta que todo advogado faz</p><h2>"Por que não usar o ChatGPT ou o Claude?"</h2>
     <p class="l-sub">A gente testou. Com os mesmos PDFs e o mesmo pedido, o ChatGPT também achou todos os eventos. A diferença está no que acontece com os dados e em quem confere o resultado.</p>
     <div class="l-panel"><table class="l-table l-cmp"><thead><tr><th></th><th>ChatGPT</th><th>Acta</th></tr></thead><tbody>
       <tr><td>Eventos encontrados nos dois casos de teste</td><td>12 de 12</td><td>12 de 12</td></tr>
@@ -55,9 +71,21 @@
   </div></section>
 
   <section class="l-section"><div class="l-wrap">
+    <p class="eyebrow">Perguntas que a banca e a turma fizeram</p><h2>Respostas curtas</h2>
+    <div class="l-faq">
+      <details><summary>A Acta protocola petições ou entra no PJe?</summary><p>Não. Ela trabalha só com os arquivos que você envia. Protocolo exige inscrição na OAB e decisão do advogado, e por isso fica de fora de propósito.</p></details>
+      <details><summary>Ela acompanha prazos?</summary><p>Ela encontra os prazos escritos nos documentos (por exemplo, "15 dias para indicar provas") e avisa quando falta o termo inicial. Não consulta tribunais nem calcula o vencimento sozinha, porque isso depende da intimação, que normalmente não está nas peças.</p></details>
+      <details><summary>E quando a resposta depende de interpretação?</summary><p>A Acta mostra as duas versões, cada uma com a sua fonte, e marca o ponto como algo a conferir. Ela não escolhe a tese: no caso trabalhista, por exemplo, ela aponta que as partes divergem sobre a data do pagamento, mas não diz quem tem razão.</p></details>
+      <details><summary>Se o escritório tem clientes diferentes, a mesma skill serve para todos?</summary><p>A skill guarda o pedido e o plano, não a resposta. Cada execução lê os documentos daquele caso, e você pode ajustar o plano antes de aprovar. Para clientes muito diferentes, faz sentido salvar skills diferentes.</p></details>
+      <details><summary>Qual a diferença para o ChatGPT, o Claude ou o Harvey?</summary><p>Testamos o ChatGPT: ele acertou tanto quanto a Acta. A diferença está no que acontece com os dados (aqui nada sai do escritório, ou sai só com códigos), em quem confere as citações (aqui é o sistema) e em nunca usar informação de fora dos autos. Não testamos o Harvey, então não fazemos comparação com ele.</p></details>
+      <details><summary>O advogado precisa programar?</summary><p>Não. As tarefas mais comuns já vêm prontas. Para algo diferente, ele descreve em português o que quer e salva como skill.</p></details>
+    </div>
+  </div></section>
+
+  <section class="l-section"><div class="l-wrap">
     <p class="eyebrow">Limites claros</p><h2>O que a Acta não faz, de propósito</h2>
     <div class="l-grid3">
-      <div class="l-panel"><h3>Não protocola</h3><p>Não envia e-mail e não altera os originais. Quem age é o advogado.</p></div>
+      <div class="l-panel"><h3>Não protocola</h3><p>Não entra no PJe nem em sites de tribunal, não envia e-mail e não altera os originais. Quem age é o advogado.</p></div>
       <div class="l-panel"><h3>Não dá parecer</h3><p>Organiza o que está nos autos e aponta o que conferir. A tese é sua.</p></div>
       <div class="l-panel"><h3>Não busca jurisprudência</h3><p>Fonte de fora sem conferência é o erro que queremos evitar.</p></div>
     </div>

@@ -27,3 +27,5 @@ $$('.axis-card .text-button:not(.nav-skills)').forEach(b=>b.addEventListener('cl
 function enterApp(view){$('#loginView').classList.add('is-hidden');$('#appView').classList.remove('is-hidden');showView(view);}
 $('#openCase').addEventListener('click',()=>enterApp('case-demo'));
 $('#backHome').addEventListener('click',()=>{$('#appView').classList.add('is-hidden');$('#loginView').classList.remove('is-hidden');window.scrollTo({top:0})});
+
+document.querySelectorAll('.l-tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.l-tab').forEach(x=>x.classList.toggle('on',x===t));document.querySelectorAll('.l-case').forEach(c=>c.classList.toggle('is-hidden',c.id!=='case-'+t.dataset.case));}));

@@ -31,8 +31,21 @@ O Claude também escreveu o segundo caso fictício (trabalhista), o rascunho do 
 | Classificar o documento pela primeira palavra-chave | A decisão falava da contestação e virava "Defesa" | Olhar primeiro o nome do arquivo e o título |
 | Confiar só nos testes automáticos | Os testes passavam, mas a demonstração tinha erros | Montar um gabarito com as datas certas de dois casos e medir: a versão antiga achava 9 de 12 eventos, a nova acha 12 de 12 |
 | Testar com um caso diferente do nosso | No caso trabalhista, a versão antiga chamou a reclamação de "Contrato" e a ata de "Documento geral" | Incluir esses tipos e manter o caso trabalhista como segundo exemplo |
+| Conferir o caso trabalhista no site | A Acta apagava o símbolo §: "art. 477, § 8º" saía como "art. 477, . 8º" | Corrigimos o código (o § era usado internamente como marcador) e criamos um teste para isso |
 
 Uma ressalva honesta: as regras foram ajustadas depois de olharmos para esses dois casos. O 12 de 12 mostra que corrigimos o que estava errado, não que a Acta acerta em qualquer processo. O próximo passo seria testar com uma decisão real e pública.
+
+## O que mudamos por causa do feedback da fase 1
+
+Lemos o feedback da banca e da turma sobre a Acta e usamos os pontos mais repetidos como lista de tarefas:
+
+- **"Não ficou claro em que tarefa do advogado a ferramenta atua" e "a proposta ficou genérica".** Delimitamos o público: advogado de contencioso que acabou de receber um processo. O site agora começa por essa situação.
+- **"O que é o plano? É uma tese? É um agente?"** O site e o README explicam o plano com o exemplo real da cronologia, passo a passo.
+- **"Faltou ver o produto em uso, e em outros casos."** O produto agora funciona de verdade, e o site mostra o resultado real em dois casos (cível e trabalhista).
+- **"Qual a diferença para o ChatGPT e o Claude?"** Fizemos o teste lado a lado em vez de apenas afirmar uma diferença.
+- **"A Acta protocola? Mexe em sistemas externos?"** Deixamos claro que não: ela não entra no PJe nem em sites de tribunal.
+- **"Faltou falar de limites e de sigilo."** O site tem uma seção de limites e outra que mostra o texto exato que sairia para a IA.
+- **"O site começa num login e não explica o produto."** Virou uma página de apresentação, com a demonstração aberta.
 
 ## O site
 
