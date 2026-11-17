@@ -50,4 +50,4 @@ function setTask(k){
   $$('.res').forEach(r=>r.classList.toggle('is-hidden',r.id!=='res-'+k));
   $$('.task-card').forEach(c=>c.classList.toggle('on',c.dataset.task===k));
 }
-$$('.task-card').forEach(c=>c.addEventListener('click',()=>{$('#requestText').value=c.dataset.prompt;setTask(c.dataset.task);toast('Pedido preenchido. Agora clique em "Planejar ferramenta".')}));
+$$('.task-card').forEach(c=>c.addEventListener('click',()=>{$('#requestText').value=c.dataset.prompt;setTask(c.dataset.task);toast('Pedido preenchido. Agora clique em "Ver o plano".')}));
