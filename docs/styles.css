@@ -120,3 +120,4 @@
 .r-quote{display:block;font-size:12px;color:var(--ink);background:var(--soft);border-left:3px solid var(--line);padding:6px 8px;margin:8px 0;font-style:italic}.r-risks article{display:flex;flex-direction:column}
 .r-risks .r-badge{align-self:flex-start}
 .r-table hr{border:0;border-top:1px dashed var(--line);margin:8px 0}
+.composer-footer .ai-switch span{display:inline;font-size:12px}

@@ -50,7 +50,11 @@ $$(".nav-examples").forEach(b => b.addEventListener("click", () => showView("exa
 $$("[data-back]").forEach(b => b.addEventListener("click", () => showStage(b.dataset.back)));
 $$(".l-tab").forEach(t => t.addEventListener("click", () => { $$(".l-tab").forEach(x => x.classList.toggle("on", x === t)); $$(".l-case").forEach(c => c.classList.toggle("is-hidden", c.id !== "case-" + t.dataset.case)); }));
 $$(".use-example").forEach(b => b.addEventListener("click", () => { clearSkill(); showView("builder"); showStage("startStage"); $("#requestText").value = b.dataset.prompt; setTask(detectTask(b.dataset.prompt)); toast("Exemplo carregado. Escolha os arquivos e clique em Ver o plano."); }));
-$$(".axis-card .text-button:not(.nav-skills)").forEach(b => b.addEventListener("click", () => showView("settings")));
+$("#editOffice").addEventListener("click", () => { $("#officePrompt").scrollIntoView({ behavior: "smooth", block: "center" }); $("#officePrompt").focus(); });
+const prefs = () => ({ approve: true, tests: true, blockAi: false, ...store.get("acta.prefs", {}) });
+function renderPrefs() { const p = prefs(); $("#prefApprove").checked = p.approve; $("#prefTests").checked = p.tests; $("#prefBlockAi").checked = p.blockAi; $(".criteria-card").classList.toggle("is-hidden", !p.tests); }
+[["#prefApprove", "approve"], ["#prefTests", "tests"], ["#prefBlockAi", "blockAi"]].forEach(([id, k]) => $(id).addEventListener("change", () => { store.set("acta.prefs", { ...prefs(), [k]: $(id).checked }); renderPrefs(); refreshAi(); toast("Configuração salva."); }));
+renderPrefs();
 $$(".nav-skills").forEach(b => b.addEventListener("click", () => showView("skills")));
 
 // ---------- arquivos ----------
@@ -96,10 +100,11 @@ $("#requestText").addEventListener("input", () => { const k = detectTask($("#req
 // ---------- IA ----------
 let aiAvailable = false;
 async function refreshAi() {
-  const st = await AI.status(); aiAvailable = st.available;
+  const st = await AI.status(); aiAvailable = st.available && !prefs().blockAi;
+  if (st.available && prefs().blockAi) { st.available = false; st.label = "IA bloqueada em Configurações (sigilo total)"; }
   $("#useAi").disabled = !st.available; if (!st.available) $("#useAi").checked = false;
   $("#aiLabel").textContent = st.available ? "Usar IA (texto anonimizado)" : "IA desligada";
-  $("#aiStatusLine").innerHTML = st.available ? `IA conectada: ${esc(st.label)}.` : `Sem IA: a Acta funciona no modo local, copiando trechos do processo. Para resultados em linguagem simples, <a href="${CLAUDE_URL}" target="_blank">abra a Acta dentro do Claude</a> (IA sem chave) ou <a href="#" id="goSettings">conecte uma chave</a>.`;
+  $("#aiStatusLine").innerHTML = st.available ? `IA conectada: ${esc(st.label)}.` : prefs().blockAi ? "IA bloqueada em Configurações (sigilo total): nada sai do computador." : `Sem IA: a Acta funciona no modo local, copiando trechos do processo. Para resultados em linguagem simples, <a href="${CLAUDE_URL}" target="_blank">abra a Acta dentro do Claude</a> (IA sem chave) ou <a href="#" id="goSettings">conecte uma chave</a>.`;
   const g = $("#goSettings"); if (g) g.addEventListener("click", e => { e.preventDefault(); showView("settings"); });
   return st;
 }
@@ -136,7 +141,7 @@ $("#requestText").addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey
 $("#contextForm").addEventListener("submit", async e => {
   e.preventDefault();
   const btn = $("#contextForm button"); btn.disabled = true; btn.textContent = "Montando o plano...";
-  try { await buildPlan(); showStage("planStage"); }
+  try { await buildPlan(); if (prefs().approve) showStage("planStage"); else execute({ fromSkill: null }); }
   catch (err) { toast(err.message); }
   finally { btn.disabled = false; btn.textContent = "Gerar plano →"; }
 });
@@ -238,10 +243,10 @@ function renderBody(out) {
   }
   if (out.task === "cronologia") return `<table class="r-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>${r.events.map(e => `<tr><td class="nowrap"><b>${e.date}${e.end_date ? ` a ${e.end_date}` : ""}</b>${e.note ? '<br><span class="r-badge warn">ano inferido</span>' : ""}${e.kind === "juntada" ? '<br><span class="r-badge ok">movimentação</span>' : ""}</td><td>${esc(e.event)}</td><td class="r-src">${src(e.source, e.page)}</td></tr>`).join("") || '<tr><td colspan="3">Nenhuma data encontrada.</td></tr>'}${r.deadlines.map(d => `<tr><td class="nowrap"><b>Prazo: ${esc(d.deadline)}</b></td><td>${esc(d.event)}</td><td class="r-src">${src(d.source, d.page)}</td></tr>`).join("")}</tbody></table>`;
   if (out.task === "comparacao") { const col = xs => `<ul>${xs.map(x => `<li>“${esc(x.text)}” <small class="r-src">(${esc(x.piece || "")}, p. ${x.page})</small></li>`).join("") || "<li>Nenhum trecho legível encontrado.</li>"}</ul>`; return `<div class="r-two"><div><h3>${esc(r.columns[0])}</h3><small class="r-src">${esc((r.sources || [])[0] || "")}</small>${col(r.left)}</div><div><h3>${esc(r.columns[1])}</h3><small class="r-src">${esc((r.sources || [])[1] || "")}</small>${col(r.right)}</div></div>${r.controverted.length ? `<div class="r-block"><h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`; }
-  if (out.task === "organizacao") return `<div class="r-docs">${r.documents.map(d => `<article><span>${esc(d.type)}${d.process ? ` · ${esc(d.process)}` : ""}</span><h3>${esc(d.title || d.name)}</h3><p>${esc(d.summary)}</p><small class="r-src">${esc(d.name)} · ${d.pages} p.</small></article>`).join("")}</div>`;
+  if (out.task === "organizacao") return `<p class="r-summary">${r.documents.length} peça(s), na ordem em que aparecem.</p><div class="r-docs">${r.documents.map(d => `<article><span>${esc(d.type)}${d.signed ? ` · ${esc(d.signed)}` : ""}</span>${d.title ? `<h3>${esc(d.title)}</h3>` : ""}<p>${esc(d.summary)}</p><small class="r-src">${d.id ? `ID ${esc(d.id)} · ` : `${esc(d.name)} · `}${d.first === d.last ? `p. ${d.first}` : `p. ${d.first} a ${d.last}`}</small></article>`).join("")}</div>`;
   if (out.task === "riscos") return `<div class="r-risks">${r.items.map(x => `<article><span class="r-badge ${x.level === "alto" ? "bad" : "warn"}">${esc(x.level.toUpperCase())}</span><h3>${esc(x.risk)}</h3><p>${esc(x.action)}</p>${x.quote ? `<q class="r-quote">${esc(x.quote)}</q>` : ""}${x.source ? `<small class="r-src">${src(x.source, x.page)}</small>` : ""}</article>`).join("")}</div>`;
-  return `<div class="r-metrics"><div><span>Documentos lidos</span><b>${r.documents.length}</b></div><div><span>Valores encontrados</span><b>${esc(r.amounts.join(" · ") || "Nenhum")}</b></div><div><span>Evento mais recente</span><b>${r.last_event ? esc(r.last_event.date) : "—"}</b></div></div>
-    <div class="r-block"><h3>Resumo</h3><p>${esc(r.summary)}</p><h3>Situação atual</h3><p>${esc(r.status)}${r.status_source ? ` <small class="r-src">(${esc(r.status_source)})</small>` : ""}</p>${r.controverted.length ? `<h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<h3>Antes de enviar ao cliente</h3><ul><li>Validar valores, datas e prazos nos originais.</li><li>Revisar as conclusões jurídicas: a Acta não substitui o advogado.</li></ul></div>`;
+  return `<div class="r-metrics"><div><span>${r.pieces > out.sources.length ? "Peças lidas" : "Documentos lidos"}</span><b>${r.documents.length}</b></div><div><span>Valores diferentes no processo</span><b>${r.amounts.length || "Nenhum"}</b></div><div><span>Peça mais recente</span><b>${(() => { const s = r.documents.filter(d => d.signed); return s.length ? esc(s[s.length - 1].signed) : (r.last_event ? esc(r.last_event.date) : "—"); })()}</b></div></div>
+    <div class="r-block"><h3>Resumo</h3><p>${esc(r.summary)}</p><h3>Situação atual</h3><p>${esc(r.status)}${r.status_source ? ` <small class="r-src">(${esc(r.status_source.replace(/^.* · (ID \d+)/, "Peça $1"))})</small>` : ""}</p>${r.controverted.length ? `<h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${(r.amount_list || []).length ? `<h3>Valores que aparecem no processo</h3><table class="r-table"><tbody>${r.amount_list.map(x => `<tr><td class="nowrap"><b>${esc(x.value)}</b></td><td>${esc(x.text)}</td><td class="r-src">${src(x.source, x.page)}</td></tr>`).join("")}</tbody></table>` : ""}<h3>Antes de enviar ao cliente</h3><ul><li>Validar valores, datas e prazos nos originais.</li><li>Revisar as conclusões jurídicas: a Acta não substitui o advogado.</li></ul></div>`;
 }
 function renderPending(box, list) {
   box.classList.toggle("is-hidden", !list.length);

@@ -146,11 +146,16 @@
   const MONEY = () => /R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?/g;
   const CNJ = /\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/;
   const CITED_DOCS = /documentos? (?:citados?|anexos?|juntados?)\s*:\s*((?:\b(?:Sr|Sra|Dr|Dra)\.|[^.])+)/i;
+  const FACT_NAMES = { pag: "o pagamento", entreg: "a entrega", notific: "a notificação", comunic: "a comunicação", dispens: "a dispensa", admit: "a admissão", assin: "a assinatura", celebr: "a celebração do contrato", rescind: "a rescisão", receb: "o recebimento" };
   const FACT_STEMS = ["pag", "entreg", "notific", "comunic", "dispens", "admit", "assin", "celebr", "rescind", "receb"];
-  const DOC_TYPES = [["ata de audiencia", "Ata de audiência"], ["ata-audiencia", "Ata de audiência"], ["sentenca", "Sentença"], ["decisao", "Decisão"], ["despacho", "Despacho"], ["acordao", "Acórdão"], ["contestacao", "Defesa"], ["defesa", "Defesa"], ["replica", "Réplica"], ["reclamacao", "Petição inicial"], ["peticao inicial", "Petição inicial"], ["inicial", "Petição inicial"], ["recurso", "Recurso"], ["apelacao", "Recurso"], ["embargos", "Recurso"], ["termo de audiencia", "Ata de audiência"], ["ato ordinatorio", "Ato ordinatório"], ["certidao", "Certidão"], ["intimacao", "Intimação"], ["mandado", "Mandado"], ["procuracao", "Procuração"], ["contrato", "Contrato"], ["peticao", "Petição"], ["manifestacao", "Petição"]];
+  const DOC_TYPES = [["ata de audiencia", "Ata de audiência"], ["ata-audiencia", "Ata de audiência"], ["sentenca", "Sentença"], ["decisao", "Decisão"], ["despacho", "Despacho"], ["acordao", "Acórdão"], ["replica", "Réplica"], ["impugnacao a contestacao", "Réplica"], ["contestacao", "Defesa"], ["defesa", "Defesa"], ["reclamacao", "Petição inicial"], ["peticao inicial", "Petição inicial"], ["inicial", "Petição inicial"], ["recurso", "Recurso"], ["apelacao", "Recurso"], ["embargos", "Recurso"], ["termo de audiencia", "Ata de audiência"], ["ato ordinatorio", "Ato ordinatório"], ["certidao", "Certidão"], ["intimacao", "Intimação"], ["mandado", "Mandado"], ["procuracao", "Procuração"], ["contrato", "Contrato"], ["peticao", "Petição"], ["manifestacao", "Petição"]];
   const CLAIM_WORDS = ["afirma", "sustenta", "alega", "pede", "pedido", "condenacao", "prejuizo", "celebraram", "ocorreu", "atraso", "requer"];
   const DEFENSE_WORDS = ["reconhece", "sustenta", "invoca", "afirma", "contesta", "alega", "improcedencia", "reducao", "nega", "impugna"];
   const ORDER_WORDS = ["designo", "fixo", "determino", "defiro", "indefiro", "deverao", "julgo", "condeno", "intimem"];
+  const COURT = ["Decisão", "Despacho", "Sentença", "Acórdão", "Ata de audiência", "Intimação", "Ato ordinatório", "Certidão", "Mandado"];
+  const BOILER = /^(?:autora?|r[ée]u?|reclamante|reclamad[ao]|requerente|requerid[ao]|processo)\s*(?:n[º°o.]*)?\s*:|j[áa] qualificad|inscrit[oa] no (?:cpf|cnpj)|vem,? (?:respeitosamente,? )?(?:a presença|perante|por (?:seu|sua|meio)|tempestivamente|propor|apresentar|interpor)|nestes termos|pede deferimento|termos em que|^excelent[íi]ssim|^vistos/i;
+  const DATELINE = /^[A-ZÀ-Ú][\wÀ-ú' -]{2,40},\s*\d{1,2}º?\s+de\s+[a-zç]+\s+de\s+\d{4}\.?$/i;
+  const sentenceCase = t => t && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t;
   const pad = n => String(n).padStart(2, "0");
   const fmt = (d, m, y) => `${pad(d)}/${pad(m)}/${y}`;
   const short = (t, n = 230) => { t = squash(t); return t.length <= n ? t : t.slice(0, n - 1).trimEnd() + "…"; };
@@ -192,11 +197,13 @@
     return best ? +best[0] : null;
   }
   function timeline(prepared) {
-    const events = [], deadlines = [], seen = new Set();
+    const events = [], deadlines = [], seen = new Set(), seenDl = new Set();
+    const hasCourt = prepared.some(d => COURT.includes(d.type));
     for (const doc of prepared) {
       const year = mainYear(doc);
       for (const s of doc.sentences) {
         const t = s.text, found = [];
+        if (DATELINE.test(t)) continue;
         for (const m of t.matchAll(DATE_NUM())) found.push([+m[1], +m[2], +m[3], {}]);
         for (const m of t.matchAll(DATE_TEXT())) { const mo = MONTHS[normalize(m[2])]; if (mo) found.push([+m[1], mo, +m[3], {}]); }
         const ranges = [];
@@ -218,14 +225,14 @@
           if (seen.has(key)) continue; seen.add(key);
           events.push({ date: fmt(d, mo, y), iso: `${y}-${pad(mo)}-${pad(d)}`, event: short(t), source: doc.name, page: s.page, doc_type: doc.type, ...extra });
         }
-        for (const m of t.matchAll(DEADLINE()))
-          deadlines.push({ deadline: `${m[1]} ${m[2]}`, event: short(t), source: doc.name, page: s.page, note: "o documento não diz a partir de quando o prazo corre; conferir a intimação" });
+        if (!hasCourt || COURT.includes(doc.type)) for (const m of t.matchAll(DEADLINE()))
+          if (!seenDl.has(normalize(t)) && seenDl.add(normalize(t))) deadlines.push({ deadline: `${m[1]} ${m[2]}`, event: short(t), source: doc.name, page: s.page, note: "o documento não diz a partir de quando o prazo corre; conferir a intimação" });
       }
     }
     for (const doc of prepared) if (doc.signed) {
       const [d, mo, y] = doc.signed.date.split("/").map(Number);
       const first = doc.sentences[0];
-      events.push({ date: doc.signed.date, iso: `${y}-${pad(mo)}-${pad(d)}`, event: `Peça juntada no PJe: ${doc.type}${doc.title ? ` (${doc.title})` : ""}, assinada eletronicamente.`, source: doc.name, page: first ? first.page : +(doc.text.match(/⟦p\. (\d+)⟧/) || [0, 1])[1], doc_type: doc.type, kind: "juntada" });
+      events.push({ date: doc.signed.date, iso: `${y}-${pad(mo)}-${pad(d)}`, event: `Juntada: ${doc.title && normalize(doc.title) !== normalize(doc.type) ? sentenceCase(doc.title) : doc.type}.`, source: doc.name, page: first ? first.page : +(doc.text.match(/⟦p\. (\d+)⟧/) || [0, 1])[1], doc_type: doc.type, kind: "juntada" });
     }
     events.sort((a, b) => a.iso.localeCompare(b.iso) || (a.kind === "juntada" ? -1 : 0) - (b.kind === "juntada" ? -1 : 0) || a.source.localeCompare(b.source));
     return { events, deadlines };
@@ -248,24 +255,24 @@
     if (!pet || !def) return [];
     const a = factDates(pet), b = factDates(def), out = [];
     for (const s of FACT_STEMS) if (a[s] && b[s] && ![...a[s]].some(x => b[s].has(x)))
-      out.push(`Divergência de data: para o fato "${s}…", a inicial indica ${[...a[s]].sort().join(", ")} e a defesa indica ${[...b[s]].sort().join(", ")}. Conferir a prova documental.`);
+      out.push(`Datas diferentes para ${FACT_NAMES[s]}: a inicial diz ${[...a[s]].sort().join(", ")} e a defesa diz ${[...b[s]].sort().join(", ")}. Conferir a prova.`);
     return out;
   }
   function pendingFrom(events, deadlines, prepared) {
     const pending = divergences(prepared), byDate = {};
     for (const e of events) if (e.kind !== "juntada") (byDate[e.date] = byDate[e.date] || new Set()).add(e.doc_type);
     const both = Object.entries(byDate).filter(([, t]) => t.has("Petição inicial") && t.has("Defesa")).map(([d]) => d);
-    if (both.length) pending.push(`${both.length > 6 ? `${both.length} datas` : both.join(", ")} aparece(m) na inicial e na defesa: verificar se os fatos são incontroversos.`);
+    if (both.length) pending.push(both.length === 1 ? `A data ${both[0]} aparece na inicial e na defesa: ver se as partes concordam sobre esse fato.` : `As datas ${both.slice(0, 6).join(", ")}${both.length > 6 ? " e outras" : ""} aparecem na inicial e na defesa: ver se as partes concordam sobre esses fatos.`);
     const inferred = events.filter(e => e.note);
     if (inferred.length > 3) pending.push(`${inferred.length} datas foram escritas sem o ano (ex.: "16 de maio"); a Acta deduziu o ano pelo resto da peça. Na cronologia elas aparecem com a etiqueta "ano inferido".`);
-    else for (const e of inferred) pending.push(`${e.date}: ${e.note} (${e.source}, p. ${e.page}).`);
+    else for (const e of inferred) pending.push(`${e.date} (${e.source.includes(" · ") ? "peça " + e.source.split(" · ").pop() : e.source}, p. ${e.page}): o texto não diz o ano; a Acta deduziu pelo resto da peça.`);
     if (deadlines.length > 3) pending.push(`${deadlines.length} menções a prazo no processo, nenhuma com a data em que o prazo começa. Os prazos das decisões mais recentes estão no mapa de riscos; conferir a data da intimação no PJe.`);
-    else for (const d of deadlines) pending.push(`Prazo de ${d.deadline} (${d.source}, p. ${d.page}): ${d.note}.`);
+    else for (const d of deadlines) pending.push(`Prazo de ${d.deadline} (${d.source.includes(" · ") ? "peça " + d.source.split(" · ").pop() : d.source}, p. ${d.page}): o texto não diz quando o prazo começa; conferir a intimação.`);
     const cited = new Set();
     for (const doc of prepared) for (const s of doc.sentences) { const m = s.text.match(CITED_DOCS); if (m && cited.size < 3) cited.add(`${doc.name} cita documentos que não foram enviados: ${short(m[1], 140)}.`); }
     return pending.concat([...cited]);
   }
-  const pick = (doc, words, n) => doc ? doc.sentences.filter(s => cleanSentence(s.text) && words.some(w => normalize(s.text).includes(w))).slice(0, n) : [];
+  const pick = (doc, words, n) => doc ? doc.sentences.filter(s => cleanSentence(s.text) && !BOILER.test(s.text) && words.some(w => normalize(s.text).includes(w))).slice(0, n) : [];
   function controverted(prepared) {
     for (const d of prepared) for (const s of d.sentences) {
       const m = s.text.match(/pontos controvertidos\s*:\s*(.+)/i);
@@ -278,11 +285,15 @@
     for (const d of prepared) for (const s of d.sentences) for (const m of s.text.matchAll(MONEY())) f.push(squash(m[0]).replace(/R\$\s*/, "R$ "));
     return [...new Set(f)];
   }
+  const ACT_WORDS = ["julgo", "defiro", "indefiro", "determino", "designo", "fixo", "condeno", "homologo", "cite-se", "intime", "especifiquem", "certifico", "nao houve acordo", "ficam as partes", "concedo", "recebo"];
   function docSummary(d) {
-    const keys = CLAIM_WORDS.concat(DEFENSE_WORDS, ORDER_WORDS, ["decide", "contrato"]);
-    const chosen = d.sentences.find(s => keys.some(k => normalize(s.text).includes(k))) || d.sentences[0];
-    const p = d.text.match(CNJ);
-    return { name: d.name, type: d.type, title: d.title, summary: chosen ? short(chosen.text) : "", process: p ? p[0] : null, pages: (d.text.match(/⟦p\. /g) || []).length || 1 };
+    const ok = d.sentences.filter(s => cleanSentence(s.text) && !BOILER.test(s.text));
+    const keys = COURT.includes(d.type) ? ACT_WORDS : CLAIM_WORDS.concat(DEFENSE_WORDS, ["contrato"]);
+    const chosen = ok.find(s => keys.some(k => normalize(s.text).includes(k))) || ok[0];
+    const p = d.text.match(CNJ), pages = [...d.text.matchAll(/⟦p\. (\d+)⟧/g)].map(m => +m[1]);
+    return { name: d.name, type: d.type, title: d.title && normalize(d.title) !== normalize(d.type) ? sentenceCase(d.title) : "", id: d.pjeId || null, signed: d.signed ? d.signed.date : null,
+      summary: chosen ? short(chosen.text) : (d.sentences.length ? "Texto com muitos erros de leitura (provavelmente digitalizado). Abra o original." : "Sem texto legível. Abra o original."),
+      process: p ? p[0] : null, pages: pages.length || 1, first: pages[0] || 1, last: pages[pages.length - 1] || 1 };
   }
 
   const TASKS = {
@@ -298,11 +309,11 @@
     const out = { task, title: TASKS[task], mode: "local", sources: docs.map(d => d.name), pieces: prepared.length, pending };
     if (task === "cronologia") out.result = { events, deadlines };
     else if (task === "comparacao") {
-      const pets = prepared.filter(d => d.type === "Petição inicial"), defs = prepared.filter(d => ["Defesa", "Réplica"].includes(d.type));
+      const pets = prepared.filter(d => ["Petição inicial", "Réplica"].includes(d.type)), defs = prepared.filter(d => d.type === "Defesa");
       const left = pets.length ? pets : [prepared[0]], right = defs.length ? defs : [prepared[prepared.length - 1]];
-      const label = d => `${d.type}${d.pjeId ? `, ID ${d.pjeId}` : ` (${d.name})`}`;
-      const f = (docs, words) => { const out = [], seen = new Set(); for (const d of docs) for (const s of pick(d, words, 40).concat(d.sentences.filter(x => cleanSentence(x.text)).slice(0, 12))) { const k = normalize(s.text).slice(0, 60); if (!seen.has(k) && out.length < 12) { seen.add(k); out.push({ text: short(s.text, 320), source: d.name, piece: label(d), page: s.page }); } } return out; };
-      out.result = { columns: ["O que diz o autor", "O que diz o réu"], sources: [left.map(label).join("; "), right.map(label).join("; ")], left: f(left, CLAIM_WORDS), right: f(right, DEFENSE_WORDS), controverted: contr };
+      const label = d => d.pjeId ? `${d.type}, ID ${d.pjeId}` : d.type, head = d => d.pjeId ? label(d) : `${d.type} (${d.name})`;
+      const f = (docs, words) => { const out = [], seen = new Set(); for (const d of docs) for (const s of pick(d, words, 40).concat(d.sentences.filter(x => cleanSentence(x.text) && !BOILER.test(x.text)).slice(0, 12))) { const k = normalize(s.text).slice(0, 60); if (!seen.has(k) && out.length < 12) { seen.add(k); out.push({ text: short(s.text, 320), source: d.name, piece: label(d), page: s.page, order: docs.indexOf(d) * 1e6 + d.sentences.indexOf(s) }); } } return out.sort((a, b) => a.order - b.order); };
+      out.result = { columns: ["O que diz o autor", "O que diz o réu"], sources: [left.map(head).join("; "), right.map(head).join("; ")], left: f(left, CLAIM_WORDS), right: f(right, DEFENSE_WORDS), controverted: contr };
     } else if (task === "organizacao") out.result = { documents: prepared.map(docSummary) };
     else if (task === "riscos") {
       const items = contr.map(p => ({ risk: `Ponto controvertido: ${p}`, level: "alto", action: "Fixado pelo juízo: separar as provas que sustentam a versão do cliente sobre este ponto." }));
@@ -313,10 +324,11 @@
         const o = pick(lastDecision, ORDER_WORDS, 2);
         if (o.length) items.push({ risk: `Última ${lastDecision.type.toLowerCase()} do processo`, level: "alto", action: `Cumprir ou recorrer: conferir o que foi determinado e o prazo.${lastDecision.signed ? ` Assinada em ${lastDecision.signed.date}.` : ""}`, quote: short(o.map(s => s.text).join(" "), 320), source: lastDecision.name, page: o[0].page });
       }
-      const recentDocs = ordered.filter(d => ORDERS.includes(d.type) && deadlines.some(x => x.source === d.name)).slice(-2).map(d => d.name);
+      const recentDocs = ordered.filter(d => ORDERS.includes(d.type) && deadlines.some(x => x.source === d.name)).slice(-1).map(d => d.name);
+      if (lastDecision) { const after = ordered.slice(ordered.indexOf(lastDecision) + 1).filter(d => d.type === "Recurso"); for (const r of after) { const o = r.sentences.find(x => cleanSentence(x.text) && !BOILER.test(x.text)) || r.sentences[0]; items.push({ risk: `Recurso contra a ${lastDecision.type.toLowerCase()}: ${sentenceCase(r.title) || r.type}`, level: "alto", action: `Interposto${r.signed ? ` em ${r.signed.date}` : ""}, depois da ${lastDecision.type.toLowerCase()}. Conferir o prazo de contrarrazões e os pontos atacados.`, quote: o ? short(o.text) : "", source: r.name, page: o ? o.page : null }); } }
       const recent = deadlines.filter(d => recentDocs.includes(d.source)).slice(-4);
       for (const d of recent) items.push({ risk: `Prazo de ${d.deadline}`, level: "alto", action: "O texto não diz quando o prazo começa: conferir a data da intimação ou da ciência no PJe e anotar o vencimento.", quote: d.event, source: d.source, page: d.page });
-      if (deadlines.length > recent.length) items.push({ risk: recent.length ? "Outros prazos citados no processo" : "Prazos citados no processo", level: recent.length ? "médio" : "alto", action: `Há mais ${deadlines.length - recent.length} menção(ões) a prazo, a maioria em peças antigas. Veja a cronologia para a lista completa.` });
+      if (deadlines.length > recent.length) items.push({ risk: recent.length ? "Outros prazos citados no processo" : "Prazos citados no processo", level: recent.length ? "médio" : "alto", action: `${deadlines.length - recent.length === 1 ? "Há mais 1 prazo em peça anterior" : `Há mais ${deadlines.length - recent.length} prazos em peças anteriores`}, provavelmente já vencidos. A lista completa está na cronologia.` });
       const exc = (() => { for (const d of prepared) for (const s of d.sentences) { const n = normalize(s.text); if (n.includes("forca maior") || n.includes("caso fortuito")) return { d, s }; } return null; })();
       if (exc) items.push({ risk: "Excludente de responsabilidade alegada", level: "alto", action: "Força maior ou caso fortuito aparece no processo: avaliar a prova do evento e da sua inevitabilidade.", quote: short(exc.s.text), source: exc.d.name, page: exc.s.page });
       const money = []; for (const d of prepared) for (const s of d.sentences) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!money.some(x => x.v === v)) money.push({ v, d, s }); }
@@ -330,10 +342,16 @@
       const orders = pick(statusDoc, ORDER_WORDS, 3);
       const types = {}; prepared.forEach(d => types[d.type] = (types[d.type] || 0) + 1);
       out.result = {
-        summary: (prepared.length > docs.length ? `Foram lidos ${docs.length} arquivo(s), separados em ${prepared.length} peças: ` : `Foram lidos ${prepared.length} documentos: `) + Object.entries(types).map(([t, n]) => `${n} do tipo ${t.toLowerCase()}`).join(", ") + ".",
+        summary: (() => {
+          const signed = byDate.filter(d => d.signed).reverse(), first = signed[0], last = signed[signed.length - 1];
+          const head = prepared.length > docs.length ? `O processo tem ${prepared.length} peças.` : `Foram lidos ${prepared.length} documento(s): ${Object.entries(types).map(([t, n]) => `${n > 1 ? n + " " : ""}${t.toLowerCase()}`).join(", ")}.`;
+          const span = first && last && first !== last ? ` A primeira é ${first.type.toLowerCase()} de ${first.signed.date}; a mais recente é ${(sentenceCase(last.title) || last.type).toLowerCase()} de ${last.signed.date}.` : "";
+          const after = statusDoc ? byDate.slice().reverse().slice(byDate.slice().reverse().indexOf(statusDoc) + 1).filter(d => !["Certidão", "Intimação"].includes(d.type)) : [];
+          return head + span + (after.length ? ` Depois da última ${statusDoc.type.toLowerCase()}, veio: ${after.map(d => (sentenceCase(d.title) || d.type).toLowerCase() + (d.signed ? ` (${d.signed.date})` : "")).join(", ")}.` : "");
+        })(),
         status: orders.length ? short(orders.map(s => s.text).join(" "), 420) : "Nenhuma decisão entre os documentos enviados.",
         status_source: orders.length ? `${statusDoc.name}, p. ${orders[0].page}` : null,
-        amounts: amounts(prepared), last_event: events[events.length - 1] || null, controverted: contr,
+        amounts: amounts(prepared), amount_list: (() => { const l = []; for (const d of prepared) for (const s of d.sentences) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!l.some(x => x.value === v) && l.length < 8) l.push({ value: v, text: short(s.text, 200), source: d.name, page: s.page }); } return l; })(), pieces: prepared.length, last_event: events[events.length - 1] || null, controverted: contr,
         documents: prepared.map(docSummary),
       };
     }
