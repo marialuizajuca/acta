@@ -74,3 +74,22 @@
 .l-faq details p{margin-top:10px!important}
 .hero-steps span{font-size:13px}
 .business-badge{font-size:11px!important}
+
+.stepper{display:flex;gap:6px;list-style:none;padding:0;margin:0 auto 28px;max-width:880px;flex-wrap:wrap;justify-content:center}
+.stepper li{font-size:12px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px}
+.stepper li.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stepper li.done{background:var(--green-soft);color:var(--green);border-color:var(--green-soft)}
+.files-bar{max-width:880px;margin:20px auto -8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.files-label{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+.files-bar a{background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:var(--ink);text-decoration:none}
+.files-bar a:hover{border-color:var(--ink)}
+.hint-text{font-size:13px;color:var(--muted)}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.task-card{background:#fff;border:1px solid var(--line);border-radius:12px;text-align:left;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.task-card b{font-size:15px}.task-card span{font-size:13px;color:var(--muted)}
+.task-card:hover{border-color:var(--ink)}
+.task-card.on{border:2px solid var(--orange);background:var(--orange-soft)}
+.task-note{max-width:880px;margin:0 auto 16px;background:var(--amber-soft);color:var(--amber);border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.5}
+.soon{display:inline-block;font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:9px 12px}
+.howto{margin:-6px 0 20px;padding-left:20px;font-size:14px;line-height:1.7;color:var(--ink)}
+.res .report-banner,.res .comparison-head{margin-top:6px}
