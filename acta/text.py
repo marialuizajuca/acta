@@ -16,7 +16,7 @@ END_PUNCT = (".", ":", ";", ",", "!", "?", ")", "”", '"')
 
 # Abreviações que terminam em ponto e não encerram a frase.
 ABBREVIATIONS = ["Ltda.", "S.A.", "S/A.", "Sr.", "Sra.", "Dr.", "Dra.", "art.", "arts.", "Art.", "p.", "fls.", "nº.", "n.", "Exmo.", "Exma.", "inc.", "Min.", "Rel.", "Des."]
-_PROTECT = "§"
+_PROTECT = "\ue000"  # caractere de uso privado: não aparece em texto jurídico (o § aparece)
 
 
 def normalize(value: str) -> str:

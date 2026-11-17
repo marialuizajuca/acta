@@ -63,3 +63,10 @@ def test_labor_case_flags_payment_date_divergence():
     assert any("28/08/2026" in p and "24/08/2026" in p for p in out["pending"] if p.startswith("Divergência"))
     assert any("Sr. Roberto Lima" in p for p in out["pending"])
     assert [classify(d["name"], d["text"]) for d in docs] == ["Petição inicial", "Defesa", "Ata de audiência"]
+
+
+def test_paragraph_sign_is_preserved():
+    # Antes, o caractere usado para proteger abreviações era o próprio "§", e "art. 477, § 8º" virava "art. 477, . 8º".
+    from acta.text import split_sentences
+    out = split_sentences("Pede a multa do art. 477, § 8º, da CLT. A ré nega.")
+    assert out == ["Pede a multa do art. 477, § 8º, da CLT.", "A ré nega."]
