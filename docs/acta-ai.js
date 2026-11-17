@@ -119,7 +119,7 @@ Se for cronologia, ordene por data. Se for comparação, organize por tema: para
     riscos: ["Decisão", "Sentença", "Petição inicial", "Defesa", "Despacho", "Intimação", "Recurso"],
   };
   function prepareSend(docs, task) {
-    const pieces = E().prepare(docs), LIMIT = 140000, PER = 30000;
+    const pieces = E().prepare(docs), LIMIT = 100000, PER = 25000;
     let chosen = pieces;
     if (pieces.reduce((n, p) => n + p.text.length, 0) > LIMIT) {
       const pri = PRIORITY[task] || ["Petição inicial", "Defesa", "Decisão", "Sentença", "Réplica", "Recurso"];

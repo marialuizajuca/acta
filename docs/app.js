@@ -246,7 +246,7 @@ function renderBody(out) {
   if (out.task === "comparacao") { const col = xs => `<ul>${xs.map(x => `<li>“${esc(x.text)}” <small class="r-src">(${esc(x.piece || "")}, p. ${x.page})</small></li>`).join("") || "<li>Nenhum trecho legível encontrado.</li>"}</ul>`; return `<div class="r-two"><div><h3>${esc(r.columns[0])}</h3><small class="r-src">${esc((r.sources || [])[0] || "")}</small>${col(r.left)}</div><div><h3>${esc(r.columns[1])}</h3><small class="r-src">${esc((r.sources || [])[1] || "")}</small>${col(r.right)}</div></div>${r.controverted.length ? `<div class="r-block"><h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`; }
   if (out.task === "organizacao") return `<p class="r-summary">${r.documents.length} peça(s), na ordem em que aparecem.</p><div class="r-docs">${r.documents.map(d => `<article><span>${esc(d.type)}${d.signed ? ` · ${esc(d.signed)}` : ""}</span>${d.title ? `<h3>${esc(d.title)}</h3>` : ""}<p>${esc(d.summary)}</p><small class="r-src">${d.id ? `ID ${esc(d.id)} · ` : `${esc(d.name)} · `}${d.first === d.last ? `p. ${d.first}` : `p. ${d.first} a ${d.last}`}</small></article>`).join("")}</div>`;
   if (out.task === "riscos") return `<div class="r-risks">${r.items.map(x => `<article><span class="r-badge ${x.level === "alto" ? "bad" : "warn"}">${esc(x.level.toUpperCase())}</span><h3>${esc(x.risk)}</h3><p>${esc(x.action)}</p>${x.quote ? `<q class="r-quote">${esc(x.quote)}</q>` : ""}${x.source ? `<small class="r-src">${src(x.source, x.page)}</small>` : ""}</article>`).join("")}</div>`;
-  return `<div class="r-metrics"><div><span>${r.pieces > out.sources.length ? "Peças lidas" : "Documentos lidos"}</span><b>${r.documents.length}</b></div><div><span>Valores diferentes no processo</span><b>${r.amounts.length || "Nenhum"}</b></div><div><span>Peça mais recente</span><b>${(() => { const s = r.documents.filter(d => d.signed); return s.length ? esc(s[s.length - 1].signed) : (r.last_event ? esc(r.last_event.date) : "—"); })()}</b></div></div>
+  return `<div class="r-metrics"><div><span>${r.pieces > out.sources.length ? "Peças lidas" : "Documentos lidos"}</span><b>${r.documents.length}</b></div><div><span>Valores diferentes no processo</span><b>${r.amounts.length || "Nenhum"}</b></div>${(() => { const s = r.documents.filter(d => d.signed).map(d => d.signed).sort((x, y) => x.split("/").reverse().join("").localeCompare(y.split("/").reverse().join(""))); return s.length ? `<div><span>Peça mais recente</span><b>${esc(s[s.length - 1])}</b></div>` : `<div><span>Data mais recente nos textos</span><b>${r.last_event ? esc(r.last_event.date) : "—"}</b></div>`; })()}</div>
     <div class="r-block"><h3>Resumo</h3><p>${esc(r.summary)}</p><h3>Situação atual</h3><p>${esc(r.status)}${r.status_source ? ` <small class="r-src">(${esc(r.status_source.replace(/^.* · (ID \d+)/, "Peça $1"))})</small>` : ""}</p>${r.controverted.length ? `<h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${(r.amount_list || []).length ? `<h3>Valores que aparecem no processo</h3><table class="r-table"><tbody>${r.amount_list.map(x => `<tr><td class="nowrap"><b>${esc(x.value)}</b></td><td>${esc(x.text)}</td><td class="r-src">${src(x.source, x.page)}</td></tr>`).join("")}</tbody></table>` : ""}<h3>Antes de enviar ao cliente</h3><ul><li>Validar valores, datas e prazos nos originais.</li><li>Revisar as conclusões jurídicas: a Acta não substitui o advogado.</li></ul></div>`;
 }
 function renderPending(box, list) {
@@ -260,6 +260,7 @@ function renderResult(out, fromSkill) {
   $("#toolMeta").textContent = `${out.sources.length} arquivo(s)${out.pieces > out.sources.length ? `, ${out.pieces} peças do PJe` : ""} · ${out.mode === "ia" ? "feito com IA, trechos conferidos" : "modo local, nada enviado para fora"}`;
   $("#resultBody").innerHTML = renderBody(out);
   renderPending($("#resultPending"), out.pending || []);
+  if ((out.processes || []).length > 1) toast("Atenção: os arquivos são de processos diferentes. Rode um de cada vez.");
   $("#resultChecks").innerHTML = ["Arquivos lidos: " + out.sources.length, out.mode === "ia" ? `Trechos conferidos: ${out.verification.confirmed} de ${out.verification.total}` : "Fonte com página em cada linha", "Originais alterados: nenhum", out.mode === "ia" ? "Enviado à IA só texto anonimizado" : "Nada enviado para fora"].map(x => `<span>✓ ${esc(x)}</span>`).join("");
   $("#saveCard").classList.toggle("is-hidden", !!fromSkill);
   $("#resEyebrow").textContent = fromSkill ? "Skill executada" : "Resultado";
@@ -268,7 +269,7 @@ function renderResult(out, fromSkill) {
   $("#resPill").textContent = out.mode === "ia" ? "Feito com IA" : "Modo local";
   const note = $("#resultNote");
   const localNote = out.mode !== "ia" ? `Modo local: a Acta copia os trechos do processo como estão, sem reescrever (erros de digitação do original aparecem aqui). ${aiAvailable ? '<a href="#" id="redoAi">Refazer com IA em linguagem simples →</a>' : `Para um resultado escrito em linguagem simples, use a IA: <a href="${CLAUDE_URL}" target="_blank">abra a Acta dentro do Claude</a> ou conecte uma chave em Configurações.`}` : "";
-  note.innerHTML = (fromSkill ? `Resultado da skill "<b>${esc(fromSkill.name)}</b>", com o plano aprovado quando ela foi salva. ` : "") + localNote;
+  note.innerHTML = ((out.processes || []).length > 1 ? `<b>Atenção: os arquivos são de processos diferentes (${out.processes.map(esc).join(" e ")}). O resultado mistura os dois; rode um processo de cada vez.</b><br>` : "") + (fromSkill ? `Resultado da skill "<b>${esc(fromSkill.name)}</b>", com o plano aprovado quando ela foi salva. ` : "") + localNote;
   note.classList.toggle("is-hidden", !note.innerHTML);
   const redo = $("#redoAi"); if (redo) redo.addEventListener("click", async e => { e.preventDefault(); $("#useAi").checked = true; $("#allowExternal").checked = true; if (!state.plan || state.plan.mode !== "ia") { try { await buildPlan(); } catch (err) { return toast(err.message); } $("#allowExternal").checked = true; } execute({ fromSkill: state.skill }); });
   $("#skillName").value = state.task === "outro" ? ($("#requestText").value.slice(0, 50)) : info.name;
@@ -278,10 +279,11 @@ function renderResult(out, fromSkill) {
 // ---------- download ----------
 function resultMarkdown() {
   const out = state.result; if (!out) return "";
+  const cell = x => String(x ?? "").replace(/\s+/g, " ").replace(/\|/g, "/");
+  const [head, ...rows] = resultRows(out);
   const lines = [`# ${$("#toolTitle").textContent}`, "", `Pedido: ${$("#requestText").value}`, `Arquivos: ${out.sources.join(", ")}`, `Modo: ${out.mode === "ia" ? "IA, texto anonimizado, trechos conferidos" : "local, sem envio de dados"}`, ""];
-  const tmp = document.createElement("div"); tmp.innerHTML = renderBody(out);
-  $$("table", tmp).forEach(t => { const rows = $$("tr", t).map(tr => "| " + $$("th,td", tr).map(c => c.innerText.replace(/\s+/g, " ").replace(/\|/g, "/")).join(" | ") + " |"); if (rows.length) rows.splice(1, 0, "|" + " --- |".repeat($$("th", t).length || 1)); lines.push(...rows, ""); t.remove(); });
-  const rest = tmp.innerText.trim(); if (rest) lines.push(rest, "");
+  if (out.mode === "ia" && out.summary) lines.push(out.summary, "");
+  lines.push("| " + head.map(cell).join(" | ") + " |", "|" + " --- |".repeat(head.length), ...rows.map(r => "| " + r.map(cell).join(" | ") + " |"), "");
   if ((out.pending || []).length) lines.push("## O que conferir", ...out.pending.map(x => `- [ ] ${x}`), "");
   lines.push("> Gerado pela Acta para conferência humana. Não substitui o advogado.");
   return lines.join("\n");

@@ -142,13 +142,13 @@
   const DATE_TEXT = () => /\b([0-3]?\d)º?\s+de\s+([a-zç]+)\s+de\s+((?:19|20)\d{2})\b/gi;
   const DATE_RANGE = () => /\b(?:entre|de)\s+([0-3]?\d)\s+(?:e|a)\s+([0-3]?\d)\s+de\s+([a-zç]+)(?:\s+de\s+((?:19|20)\d{2}))?/gi;
   const DATE_NOYEAR = () => new RegExp(`\\b([0-3]?\\d)º?\\s+de\\s+(${MONTH_NAMES})\\b(?!\\s+de\\s+(?:19|20)\\d{2})`, "gi");
-  const DEADLINE = () => /\b(?:em|no prazo de|prazo de)\s+(\d{1,3})\s+(dias(?:\s+úteis|\s+corridos)?|horas)\b/gi;
+  const DEADLINE = () => /\b(?:em|no prazo de|prazo de|prazo (?:[a-zà-ú]+ ){0,4}(?:é|será) de)\s+(\d{1,3})\s+(dias(?:\s+úteis|\s+corridos)?|horas)\b/gi;
   const MONEY = () => /R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?/g;
   const CNJ = /\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/;
   const CITED_DOCS = /documentos? (?:citados?|anexos?|juntados?)\s*:\s*((?:\b(?:Sr|Sra|Dr|Dra)\.|[^.])+)/i;
   const FACT_NAMES = { pag: "o pagamento", entreg: "a entrega", notific: "a notificação", comunic: "a comunicação", dispens: "a dispensa", admit: "a admissão", assin: "a assinatura", celebr: "a celebração do contrato", rescind: "a rescisão", receb: "o recebimento" };
   const FACT_STEMS = ["pag", "entreg", "notific", "comunic", "dispens", "admit", "assin", "celebr", "rescind", "receb"];
-  const DOC_TYPES = [["ata de audiencia", "Ata de audiência"], ["ata-audiencia", "Ata de audiência"], ["sentenca", "Sentença"], ["decisao", "Decisão"], ["despacho", "Despacho"], ["acordao", "Acórdão"], ["replica", "Réplica"], ["impugnacao a contestacao", "Réplica"], ["contestacao", "Defesa"], ["defesa", "Defesa"], ["reclamacao", "Petição inicial"], ["peticao inicial", "Petição inicial"], ["inicial", "Petição inicial"], ["recurso", "Recurso"], ["apelacao", "Recurso"], ["embargos", "Recurso"], ["termo de audiencia", "Ata de audiência"], ["ato ordinatorio", "Ato ordinatório"], ["certidao", "Certidão"], ["intimacao", "Intimação"], ["mandado", "Mandado"], ["procuracao", "Procuração"], ["contrato", "Contrato"], ["peticao", "Petição"], ["manifestacao", "Petição"]];
+  const DOC_TYPES = [["ata de audiencia", "Ata de audiência"], ["ata-audiencia", "Ata de audiência"], ["sentenca", "Sentença"], ["decisao", "Decisão"], ["despacho", "Despacho"], ["acordao", "Acórdão"], ["replica", "Réplica"], ["impugnacao a contestacao", "Réplica"], ["contestacao", "Defesa"], ["defesa", "Defesa"], ["reclamacao", "Petição inicial"], ["peticao inicial", "Petição inicial"], ["inicial", "Petição inicial"], ["recurso", "Recurso"], ["apelacao", "Recurso"], ["embargos", "Recurso"], ["termo de audiencia", "Ata de audiência"], ["ato ordinatorio", "Ato ordinatório"], ["certidao", "Certidão"], ["intimacao", "Intimação"], ["notificacao", "Intimação"], ["carta de citacao", "Intimação"], ["mandado", "Mandado"], ["procuracao", "Procuração"], ["contrato", "Contrato"], ["peticao", "Petição"], ["manifestacao", "Petição"]];
   const CLAIM_WORDS = ["afirma", "sustenta", "alega", "pede", "pedido", "condenacao", "prejuizo", "celebraram", "ocorreu", "atraso", "requer"];
   const DEFENSE_WORDS = ["reconhece", "sustenta", "invoca", "afirma", "contesta", "alega", "improcedencia", "reducao", "nega", "impugna"];
   const ORDER_WORDS = ["designo", "fixo", "determino", "defiro", "indefiro", "deverao", "julgo", "condeno", "intimem"];
@@ -226,7 +226,7 @@
           events.push({ date: fmt(d, mo, y), iso: `${y}-${pad(mo)}-${pad(d)}`, event: short(t), source: doc.name, page: s.page, doc_type: doc.type, ...extra });
         }
         if (!hasCourt || COURT.includes(doc.type)) for (const m of t.matchAll(DEADLINE()))
-          if (!seenDl.has(normalize(t)) && seenDl.add(normalize(t))) deadlines.push({ deadline: `${m[1]} ${m[2]}`, event: short(t), source: doc.name, page: s.page, note: "o documento não diz a partir de quando o prazo corre; conferir a intimação" });
+          if (!seenDl.has(doc.name + normalize(t)) && seenDl.add(doc.name + normalize(t))) deadlines.push({ deadline: `${m[1]} ${m[2]}`, event: short(t), source: doc.name, page: s.page, note: "o documento não diz a partir de quando o prazo corre; conferir a intimação" });
       }
     }
     for (const doc of prepared) if (doc.signed) {
@@ -306,14 +306,16 @@
     const { events, deadlines } = timeline(prepared);
     const pending = pendingFrom(events, deadlines, prepared);
     const contr = controverted(prepared);
-    const out = { task, title: TASKS[task], mode: "local", sources: docs.map(d => d.name), pieces: prepared.length, pending };
+    const procs = [...new Set(docs.map(d => (d.text.match(CNJ) || [])[0]).filter(Boolean))];
+    if (procs.length > 1) pending.unshift(`Atenção: os arquivos parecem ser de processos diferentes (${procs.join(" e ")}). Os resultados abaixo misturam os dois. Rode um processo de cada vez.`);
+    const out = { task, title: TASKS[task], mode: "local", sources: docs.map(d => d.name), pieces: prepared.length, pending, processes: procs };
     if (task === "cronologia") out.result = { events, deadlines };
     else if (task === "comparacao") {
       const pets = prepared.filter(d => ["Petição inicial", "Réplica"].includes(d.type)), defs = prepared.filter(d => d.type === "Defesa");
-      const left = pets.length ? pets : [prepared[0]], right = defs.length ? defs : [prepared[prepared.length - 1]];
+      const left = pets, right = defs;
       const label = d => d.pjeId ? `${d.type}, ID ${d.pjeId}` : d.type, head = d => d.pjeId ? label(d) : `${d.type} (${d.name})`;
       const f = (docs, words) => { const out = [], seen = new Set(); for (const d of docs) for (const s of pick(d, words, 40).concat(d.sentences.filter(x => cleanSentence(x.text) && !BOILER.test(x.text)).slice(0, 12))) { const k = normalize(s.text).slice(0, 60); if (!seen.has(k) && out.length < 12) { seen.add(k); out.push({ text: short(s.text, 320), source: d.name, piece: label(d), page: s.page, order: docs.indexOf(d) * 1e6 + d.sentences.indexOf(s) }); } } return out.sort((a, b) => a.order - b.order); };
-      out.result = { columns: ["O que diz o autor", "O que diz o réu"], sources: [left.map(head).join("; "), right.map(head).join("; ")], left: f(left, CLAIM_WORDS), right: f(right, DEFENSE_WORDS), controverted: contr };
+      out.result = { columns: ["O que diz o autor", "O que diz o réu"], sources: [left.map(head).join("; ") || "Nenhuma petição inicial entre os arquivos.", right.map(head).join("; ") || "Nenhuma contestação entre os arquivos."], left: f(left, CLAIM_WORDS), right: f(right, DEFENSE_WORDS), controverted: contr };
     } else if (task === "organizacao") out.result = { documents: prepared.map(docSummary) };
     else if (task === "riscos") {
       const items = contr.map(p => ({ risk: `Ponto controvertido: ${p}`, level: "alto", action: "Fixado pelo juízo: separar as provas que sustentam a versão do cliente sobre este ponto." }));
