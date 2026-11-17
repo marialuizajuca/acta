@@ -5,7 +5,7 @@
   <meta name="description" content="Acta lê as peças de um processo e monta cronologia, relatório ao cliente, comparação das alegações e mapa de riscos, com documento e página de cada informação."><meta name="robots" content="index,follow">
   <link rel="canonical" href="https://marialuizajuca.github.io/acta/"><title>Acta | Assistente para processos de contencioso</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2311110f%22/%3E%3Ctext x=%2216%22 y=%2223%22 font-size=%2220%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3Ea.%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=14">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
   <div id="loginView"><nav class="l-topnav"><div class="l-wrap l-topnav-in"><a href="#" class="logo" onclick="scrollTo({top:0,behavior:'smooth'});return false">acta.</a><div class="l-toplinks"><a href="#landing-como">Como funciona</a><a href="#landing-exemplo">Exemplo</a><a href="#landing-testes">Testes</a><a href="#landing-dados">Seus dados</a><button type="button" class="button button-dark l-try">Experimentar →</button></div></div></nav><main class="login-shell">
@@ -133,7 +133,7 @@
       <button class="task-card" data-task="riscos" data-prompt="Aponte os riscos deste processo, as provas necessárias e o que eu ainda preciso revisar."><b>Mapa de riscos</b><span>O que provar e o que conferir</span></button>
       <button class="task-card" data-task="outro" data-prompt=""><b>Outra tarefa</b><span>Escreva o que precisa (usa a IA)</span></button>
     </div></div>
-    <form id="requestForm" class="composer-card"><textarea id="requestText" rows="3">Monte a cronologia deste processo, em ordem de data, com o documento e a página de cada acontecimento.</textarea><div class="composer-footer"><label class="ai-switch"><input type="checkbox" id="useAi"> <span id="aiLabel">Usar IA</span></label><button class="button button-dark" type="submit" id="goButton">Ver o plano →</button></div></form>
+    <form id="requestForm" class="composer-card"><textarea id="requestText" rows="3" aria-label="Pedido à Acta">Monte a cronologia deste processo, em ordem de data, com o documento e a página de cada acontecimento.</textarea><div class="composer-footer"><label class="ai-switch"><input type="checkbox" id="useAi"> <span id="aiLabel">Usar IA</span></label><button class="button button-dark" type="submit" id="goButton">Ver o plano →</button></div></form>
     <p id="aiStatusLine" class="hint-text center"></p>
   </div>
 
@@ -206,6 +206,6 @@
       </main>
     </div>
   </div>
-  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=14"></script><script src="acta-ai.js?v=14"></script><script src="app.js?v=14"></script>
+  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=15"></script><script src="acta-ai.js?v=15"></script><script src="app.js?v=15"></script>
 </body>
 </html>

@@ -130,11 +130,16 @@ O `.env` está no `.gitignore` e nunca vai para o GitHub. Uma execução nos cas
 
 ## Demonstração (3 minutos)
 
-1. Clique em **Cronologia processual** e depois em **Usar o caso de exemplo (Aurora × Delta)**.
-2. **Gerar plano** → mostre os passos e as permissões. Com IA, marque "Enviar à IA" e mostre a tabela **O que sai do computador**.
-3. **Aprovar e executar** → mostre a fonte com página, o intervalo das enchentes e a lista **O que você ainda precisa conferir**.
-4. **Salvar como skill** → ela aparece em "Minhas skills".
-5. Clique na skill **Preparação para audiência**, selecione os arquivos `04`, `05` e `06` da pasta `samples` e rode. A lista do que conferir mostra a divergência sobre a data do pagamento.
+No site, sem instalar nada:
+
+1. Abra o site e clique em **Experimentar →**.
+2. Clique em **Usar caso de exemplo cível**, escolha **Cronologia processual** e clique em **Ver o plano**.
+3. Responda as três perguntas e clique em **Gerar plano** → mostre os passos e as permissões.
+4. **Aprovar e executar** → mostre a fonte com página, o intervalo das enchentes ("ano inferido") e a lista **O que você ainda precisa conferir**.
+5. **Salvar na biblioteca** → a skill aparece em **Minhas skills**. Clique nela, escolha **Usar caso de exemplo trabalhista** e clique em **Rodar skill**. A lista do que conferir mostra que as partes dão datas diferentes para o pagamento.
+6. Com IA (na versão aberta dentro do Claude): escolha **Comparar alegações**, marque **Usar IA**, mostre a tabela **O que sai do computador** antes de aprovar e, no resultado, a coluna **Conferência**.
+
+A mesma demonstração funciona no programa em Python, rodando `uvicorn app:app` como explicado acima.
 
 ## Testes
 
@@ -142,7 +147,7 @@ O `.env` está no `.gitignore` e nunca vai para o GitHub. Uma execução nos cas
 python -m pytest -q
 ```
 
-São 21 testes. Eles cobrem as correções no caso de exemplo, a trava de sigilo, a conferência de trechos (com a IA substituída por uma resposta fixa, sem custo), as permissões e as skills salvas.
+São 22 testes. Eles cobrem as correções no caso de exemplo, a trava de sigilo, a conferência de trechos (com a IA substituída por uma resposta fixa, sem custo), as permissões e as skills salvas.
 
 ## Estrutura
 
@@ -161,7 +166,7 @@ acta/
 ├── static/             # interface web
 ├── samples/            # dois casos fictícios, três peças cada
 ├── avaliacao/          # gabarito, script de avaliação e teste contra o ChatGPT
-├── docs/               # site do produto (GitHub Pages)
+├── docs/               # site do produto (GitHub Pages): acta-engine.js (motor no navegador), acta-ai.js (IA e anonimização), app.js (telas)
 ├── tests/
 ├── app.py              # servidor FastAPI
 ├── relatorio-uso-ia.md
@@ -181,7 +186,8 @@ acta/
 - PDFs digitalizados como imagem precisam de OCR, que ainda não existe.
 - O modo local usa regras: uma data escrita de forma incomum (por exemplo, "no quinto dia útil do mês seguinte") não é encontrada.
 - A anonimização reconhece padrões (CPF, CNPJ, e-mail, telefone, empresas com Ltda./S.A., nomes depois de "Autor:", "Ré:", "Sr." etc.). Um nome solto no texto, sem nenhum desses sinais, pode escapar. Por isso o advogado vê a lista do que será trocado e o texto exato que será enviado, antes de aprovar.
-- Não há login, banco de dados nem separação por escritório. As skills ficam em arquivos na pasta `skills/`.
+- Não há login, banco de dados nem separação por escritório. No programa em Python, as skills ficam em arquivos na pasta `skills/`; no site, ficam guardadas no navegador em que foram criadas.
+- No site, a IA só funciona dentro do Claude ou com uma chave de API colada em Configurações. Sem isso, o site usa o modo local, que copia trechos do processo em vez de reescrever.
 
 ## Segurança
 
