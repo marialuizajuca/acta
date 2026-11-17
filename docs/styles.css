@@ -96,3 +96,5 @@
 
 .use-skill{cursor:pointer;transition:.15s}.use-skill:hover{border-color:var(--ink);transform:translateY(-1px)}
 #skillNote{background:var(--green-soft);color:var(--green);max-width:none}
+
+.ok-note{background:var(--green-soft)!important;color:var(--green)!important;max-width:none}

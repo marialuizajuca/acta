@@ -17,10 +17,10 @@ $('#requestText').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.ke
 $$('[data-back]').forEach(b=>b.addEventListener('click',()=>showStage(b.dataset.back)));
 $('#contextForm').addEventListener('submit',e=>{e.preventDefault();showStage('planStage')});
 $('#editPlan').addEventListener('click',()=>{showStage('clarifyStage');toast('Contexto reaberto para ajustes.')});
-$('#approvePlan').addEventListener('click',()=>{showStage('buildStage');runBuild()});
+$('#approvePlan').addEventListener('click',()=>{$('#resultNote').classList.add('is-hidden');$('#saveCard').classList.remove('is-hidden');$('#resEyebrow').textContent='Ferramenta construída';$('#resTitle').textContent='Sua skill passou nos testes.';$('#resSub').textContent='Confira o resultado antes de salvar para reutilização.';showStage('buildStage');runBuild()});
 function runBuild(){const statuses=['Validando permissões...','Lendo a estrutura dos documentos...','Construindo o extrator de eventos...','Gerando a tabela cronológica...','Executando os testes...'];const steps=$$('#buildSteps li');let value=0;steps.forEach(s=>s.classList.remove('done'));$('#progressBar').style.width='0%';$('#progressValue').textContent='0%';const timer=setInterval(()=>{value+=4;$('#progressBar').style.width=value+'%';$('#progressValue').textContent=value+'%';const current=Math.min(statuses.length-1,Math.floor(value/21));$('#buildStatus').textContent=statuses[current];steps.forEach((s,i)=>s.classList.toggle('done',i<Math.ceil(value/20)));if(value>=100){clearInterval(timer);$('#buildStatus').textContent='Ferramenta construída e testada.';setTimeout(()=>showStage('resultStage'),550)}},90)}
 $('#rerunTest').addEventListener('click',()=>{toast('Critérios conferidos de novo: 3 de 3 atendidos.')});
-$('#saveSkill').addEventListener('click',()=>{const t=TASKS[currentTask];$('#savedName').textContent=$('#skillName').value||t.name;$('#savedDesc').textContent=t.saved;$('#savedIcon').textContent=t.icon;$('#savedSkillCard').dataset.task=currentTask;$('#savedSkillCard').classList.remove('is-hidden');toast('Skill salva na biblioteca.');setTimeout(()=>showView('skills'),700)});
+$('#saveSkill').addEventListener('click',()=>{const t=TASKS[currentTask];$('#savedName').textContent=$('#skillName').value||t.name;$('#savedDesc').textContent=t.saved;$('#savedIcon').textContent=t.icon;$('#savedSkillCard').dataset.task=currentTask;$$('.use-skill:not(#savedSkillCard)').forEach(c=>c.classList.toggle('is-hidden',c.dataset.task===currentTask));$('#savedSkillCard').classList.remove('is-hidden');toast('Skill salva na biblioteca.');setTimeout(()=>showView('skills'),700)});
 $$('.nav-build').forEach(b=>b.addEventListener('click',()=>{showView('builder');showStage('startStage')}));$$('.nav-skills').forEach(b=>b.addEventListener('click',()=>showView('skills')));
 $$('.axis-card .text-button:not(.nav-skills)').forEach(b=>b.addEventListener('click',()=>toast('Configuração disponível no protótipo demonstrativo.')));
 
@@ -52,11 +52,15 @@ function setTask(k){
 }
 $$('.task-card').forEach(c=>c.addEventListener('click',()=>{$('#requestText').value=c.dataset.prompt;setTask(c.dataset.task);toast('Pedido preenchido. Agora clique em "Ver o plano".')}));
 
-$$('.use-skill').forEach(card=>card.addEventListener('click',()=>{
+
+function useSkill(card){
   const k=card.dataset.task; const name=card.querySelector('b').textContent;
-  const prompt=$(`.task-card[data-task="${k}"]`).dataset.prompt;
   showView('builder'); setTask(k);
+  const prompt=$(`.task-card[data-task="${k}"]`).dataset.prompt;
   $('#requestText').value=prompt; $('#userRequestPreview').textContent=prompt;
-  const note=$('#skillNote'); note.textContent=`Usando a skill "${name}": o plano salvo foi carregado. Não é preciso refazer o pedido nem responder às perguntas de novo. Confira os arquivos e as permissões e clique em "Aprovar e executar".`; note.classList.remove('is-hidden');
-  showStage('planStage');
-}));
+  $('#skillNote').classList.add('is-hidden');
+  const rn=$('#resultNote'); rn.textContent=`Resultado gerado pela skill "${name}", com o plano que você aprovou quando a salvou. Os arquivos usados foram as três peças do caso Aurora × Delta.`; rn.classList.remove('is-hidden');
+  toast(`Executando a skill "${name}" com o plano salvo...`);$('#saveCard').classList.add('is-hidden');$('#resEyebrow').textContent='Skill executada';$('#resTitle').textContent='Pronto, sem refazer nada.';$('#resSub').textContent='Mesmo plano, mesmas regras, mesmo formato de resultado.';rn.classList.add('ok-note');
+  showStage('buildStage'); runBuild();
+}
+$$('.use-skill').forEach(card=>card.addEventListener('click',()=>useSkill(card)));
