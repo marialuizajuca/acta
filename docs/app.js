@@ -12,7 +12,7 @@ const demoTitles={'client-report':'Relatório ao cliente','case-timeline':'Crono
 function showDemoResult(id){$$('.demo-result').forEach(el=>el.classList.toggle('is-hidden',el.id!==id));$$('.demo-action').forEach(b=>b.classList.toggle('is-active',b.dataset.demoOutput===id));$('#demoOutputTitle').textContent=demoTitles[id];$('#demoReady').textContent='Resultado pronto'}
 $$('.demo-action').forEach(b=>b.addEventListener('click',()=>showDemoResult(b.dataset.demoOutput)));
 $('#runFullDemo').addEventListener('click',()=>{const button=$('#runFullDemo'),progress=$('#demoProgress'),steps=['Identificando fatos e pedidos','Relacionando informações às fontes','Gerando cronologia e mapa de riscos','Escrevendo relatório ao cliente'];button.disabled=true;progress.classList.remove('is-hidden');$$('.demo-result').forEach(el=>el.classList.add('is-hidden'));$('#demoReady').textContent='Processando';let i=0;$('#demoProgressText').textContent=steps[0];const timer=setInterval(()=>{i++;if(i<steps.length){$('#demoProgressText').textContent=steps[i]}else{clearInterval(timer);progress.classList.add('is-hidden');button.disabled=false;showDemoResult('client-report');toast('Análise concluída: 5 resultados disponíveis.')}},420)});
-$('#requestForm').addEventListener('submit',e=>{e.preventDefault();const value=$('#requestText').value.trim();if(!value)return toast('Escolha uma tarefa ou escreva o pedido.');$('#userRequestPreview').textContent=value;setTask(detectTask(value));showStage('clarifyStage')});
+$('#requestForm').addEventListener('submit',e=>{e.preventDefault();$('#skillNote').classList.add('is-hidden');const value=$('#requestText').value.trim();if(!value)return toast('Escolha uma tarefa ou escreva o pedido.');$('#userRequestPreview').textContent=value;setTask(detectTask(value));showStage('clarifyStage')});
 $('#requestText').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')$('#requestForm').requestSubmit()});
 $$('[data-back]').forEach(b=>b.addEventListener('click',()=>showStage(b.dataset.back)));
 $('#contextForm').addEventListener('submit',e=>{e.preventDefault();showStage('planStage')});
@@ -20,7 +20,7 @@ $('#editPlan').addEventListener('click',()=>{showStage('clarifyStage');toast('Co
 $('#approvePlan').addEventListener('click',()=>{showStage('buildStage');runBuild()});
 function runBuild(){const statuses=['Validando permissões...','Lendo a estrutura dos documentos...','Construindo o extrator de eventos...','Gerando a tabela cronológica...','Executando os testes...'];const steps=$$('#buildSteps li');let value=0;steps.forEach(s=>s.classList.remove('done'));$('#progressBar').style.width='0%';$('#progressValue').textContent='0%';const timer=setInterval(()=>{value+=4;$('#progressBar').style.width=value+'%';$('#progressValue').textContent=value+'%';const current=Math.min(statuses.length-1,Math.floor(value/21));$('#buildStatus').textContent=statuses[current];steps.forEach((s,i)=>s.classList.toggle('done',i<Math.ceil(value/20)));if(value>=100){clearInterval(timer);$('#buildStatus').textContent='Ferramenta construída e testada.';setTimeout(()=>showStage('resultStage'),550)}},90)}
 $('#rerunTest').addEventListener('click',()=>{toast('Critérios conferidos de novo: 3 de 3 atendidos.')});
-$('#saveSkill').addEventListener('click',()=>{const t=TASKS[currentTask];$('#savedName').textContent=$('#skillName').value||t.name;$('#savedDesc').textContent=t.saved;$('#savedIcon').textContent=t.icon;$('#savedSkillCard').classList.remove('is-hidden');toast('Skill salva na biblioteca.');setTimeout(()=>showView('skills'),700)});
+$('#saveSkill').addEventListener('click',()=>{const t=TASKS[currentTask];$('#savedName').textContent=$('#skillName').value||t.name;$('#savedDesc').textContent=t.saved;$('#savedIcon').textContent=t.icon;$('#savedSkillCard').dataset.task=currentTask;$('#savedSkillCard').classList.remove('is-hidden');toast('Skill salva na biblioteca.');setTimeout(()=>showView('skills'),700)});
 $$('.nav-build').forEach(b=>b.addEventListener('click',()=>{showView('builder');showStage('startStage')}));$$('.nav-skills').forEach(b=>b.addEventListener('click',()=>showView('skills')));
 $$('.axis-card .text-button:not(.nav-skills)').forEach(b=>b.addEventListener('click',()=>toast('Configuração disponível no protótipo demonstrativo.')));
 
@@ -51,3 +51,12 @@ function setTask(k){
   $$('.task-card').forEach(c=>c.classList.toggle('on',c.dataset.task===k));
 }
 $$('.task-card').forEach(c=>c.addEventListener('click',()=>{$('#requestText').value=c.dataset.prompt;setTask(c.dataset.task);toast('Pedido preenchido. Agora clique em "Ver o plano".')}));
+
+$$('.use-skill').forEach(card=>card.addEventListener('click',()=>{
+  const k=card.dataset.task; const name=card.querySelector('b').textContent;
+  const prompt=$(`.task-card[data-task="${k}"]`).dataset.prompt;
+  showView('builder'); setTask(k);
+  $('#requestText').value=prompt; $('#userRequestPreview').textContent=prompt;
+  const note=$('#skillNote'); note.textContent=`Usando a skill "${name}": o plano salvo foi carregado. Não é preciso refazer o pedido nem responder às perguntas de novo. Confira os arquivos e as permissões e clique em "Aprovar e executar".`; note.classList.remove('is-hidden');
+  showStage('planStage');
+}));
