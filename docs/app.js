@@ -71,7 +71,7 @@ async function loadSample(kind) {
   state.docs = null; state.sample = kind; renderFiles();
 }
 $("#pickFiles").addEventListener("click", () => $("#fileInput").click());
-$("#fileInput").addEventListener("change", e => { state.files = [...e.target.files]; state.docs = null; state.sample = null; renderFiles(); e.target.value = ""; });
+$("#fileInput").addEventListener("change", e => { state.files = [...e.target.files].filter((f, i, all) => all.findIndex(g => g.name === f.name && g.size === f.size) === i); state.docs = null; state.sample = null; renderFiles(); e.target.value = ""; });
 $$(".sample-btn").forEach(b => b.addEventListener("click", async () => { await loadSample(b.dataset.case); toast("Caso de exemplo carregado."); }));
 async function readDocs() {
   if (state.docs) return state.docs;

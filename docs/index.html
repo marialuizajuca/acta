@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Acta, assistente de programação por IA para advogados."><meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://acta-contratos.insper-1495.chatgpt.site"><title>Acta | Construa suas ferramentas jurídicas</title>
+  <meta name="description" content="Acta lê as peças de um processo e monta cronologia, relatório ao cliente, comparação das alegações e mapa de riscos, com documento e página de cada informação."><meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://marialuizajuca.github.io/acta/"><title>Acta | Assistente para processos de contencioso</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2311110f%22/%3E%3Ctext x=%2216%22 y=%2223%22 font-size=%2220%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3Ea.%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=13">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
   <div id="loginView"><nav class="l-topnav"><div class="l-wrap l-topnav-in"><a href="#" class="logo" onclick="scrollTo({top:0,behavior:'smooth'});return false">acta.</a><div class="l-toplinks"><a href="#landing-como">Como funciona</a><a href="#landing-exemplo">Exemplo</a><a href="#landing-testes">Testes</a><a href="#landing-dados">Seus dados</a><button type="button" class="button button-dark l-try">Experimentar →</button></div></div></nav><main class="login-shell">
@@ -19,8 +19,8 @@
   </div></div></section>
 
   <section class="l-section" id="landing-exemplo"><div class="l-wrap">
-    <p class="eyebrow">Exemplo real, em dois casos</p><h2>O que a Acta devolveu, sem edição</h2>
-    <p class="l-sub">Pedido nos dois casos: "Monte a cronologia do caso." Cada caso tem três PDFs fictícios, que estão no repositório para qualquer pessoa rodar e conferir. A tabela mostra um trecho do resultado.</p>
+    <p class="eyebrow">Exemplo real, em dois casos</p><h2>O que a Acta devolveu</h2>
+    <p class="l-sub">Pedido nos dois casos: "Monte a cronologia do caso." Cada caso tem três PDFs fictícios, que estão no repositório para qualquer pessoa rodar e conferir. A tabela mostra parte do resultado; os nomes dos arquivos foram encurtados e frases longas, cortadas (…). O resultado completo sai igual no site.</p>
     <div class="l-tabs"><button class="l-tab on" data-case="civ">Cível · Aurora × Delta</button><button class="l-tab" data-case="tra">Trabalhista · Marina × Pão Dourado</button></div>
     <div class="l-panel l-case" id="case-civ"><table class="l-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>
       <tr><td>10/01/2026</td><td>Em 10 de janeiro de 2026, as partes celebraram contrato para transporte e entrega de 120 equipamentos eletrônicos até 31 de janeiro de 2026.</td><td>Petição inicial, p. 1</td></tr>
@@ -28,7 +28,7 @@
       <tr><td>18/02/2026</td><td>A entrega ocorreu apenas em 18 de fevereiro de 2026.</td><td>Petição inicial, p. 1</td></tr>
       <tr><td>Prazo: 15 dias</td><td>As partes deverão indicar provas em 15 dias.</td><td>Decisão, p. 1</td></tr>
       <tr><td>15/06/2026</td><td>Designo audiência de conciliação para 15 de junho de 2026, às 14h.</td><td>Decisão, p. 1</td></tr>
-    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li>18/02/2026 aparece na inicial e na defesa: ver se o fato é incontroverso.</li><li>O prazo de 15 dias não diz a partir de quando corre: conferir a intimação.</li><li>A inicial cita contrato, comprovante de entrega e nota de débito que não foram enviados.</li></ul></div></div>
+    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li>A data 18/02/2026 aparece na inicial e na defesa: ver se as partes concordam sobre esse fato.</li><li>22/01/2026 (contestação, p. 1): o texto não diz o ano; a Acta deduziu pelo resto da peça.</li><li>Prazo de 15 dias (decisão, p. 1): o texto não diz quando o prazo começa; conferir a intimação.</li><li>A petição inicial cita documentos que não foram enviados: contrato de transporte, comprovante de entrega e nota de débito do cliente final.</li></ul></div></div>
     <div class="l-panel l-case is-hidden" id="case-tra"><table class="l-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>
       <tr><td>03/02/2025</td><td>A reclamante foi admitida em 03/02/2025 como atendente, com jornada contratual das 6h às 14h.</td><td>Reclamação, p. 1</td></tr>
       <tr><td>14/08/2026</td><td>Em 14 de agosto de 2026, a reclamante foi dispensada sem justa causa, com aviso prévio indenizado.</td><td>Reclamação, p. 1</td></tr>
@@ -37,7 +37,7 @@
       <tr><td>02/09/2026<br><span class="l-badge">ano inferido</span></td><td>As guias do seguro-desemprego foram entregues no dia 2 de setembro.</td><td>Reclamação, p. 1</td></tr>
       <tr><td>Prazo: 8 dias</td><td>A reclamada deverá juntar os cartões de ponto e o comprovante de pagamento no prazo de 8 dias.</td><td>Ata, p. 1</td></tr>
       <tr><td>10/03/2027</td><td>Designo audiência de instrução para 10 de março de 2027, às 9h30.</td><td>Ata, p. 1</td></tr>
-    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li><b>Divergência:</b> a reclamante diz que recebeu as verbas em 28/08/2026 e a empresa diz que pagou em 24/08/2026. É essa data que decide a multa do art. 477, § 8º.</li><li>O prazo de 8 dias não diz a partir de quando corre: conferir a intimação.</li><li>A reclamação cita termo de rescisão, comprovante bancário e mensagens de WhatsApp que não foram enviados.</li></ul></div></div>
+    </tbody></table><div class="l-check"><b>O que você ainda precisa conferir</b><ul><li><b>Datas diferentes para o pagamento:</b> a inicial diz 28/08/2026 e a defesa diz 24/08/2026. Conferir a prova.</li><li>Prazo de 8 dias (ata, p. 1): o texto não diz quando o prazo começa; conferir a intimação.</li><li>A reclamação cita documentos que não foram enviados: termo de rescisão, comprovante bancário de 28/08/2026 e mensagens de WhatsApp com o gerente.</li></ul></div></div>
   </div></section>
 
   <section class="l-section"><div class="l-wrap">
@@ -73,7 +73,7 @@
 <section class="l-section" id="landing-dados"><div class="l-wrap">
     <p class="eyebrow">Seus dados</p><h2>O que sai do escritório, e o que não sai</h2>
     <div class="l-grid2">
-      <div class="l-panel"><h3>Modo padrão</h3><p>Os documentos são lidos no próprio computador e não são gravados nem enviados. Funciona sem internet.</p></div>
+      <div class="l-panel"><h3>Modo padrão</h3><p>Os documentos são lidos no próprio computador e não são gravados nem enviados. Depois que a página abre, funciona até sem internet.</p></div>
       <div class="l-panel"><h3>Modo com IA (só com a sua permissão)</h3><p>Antes do envio, nomes, CPF, CNPJ, e-mail e número do processo viram códigos. Você vê o texto exato antes de aprovar, e os nomes reais só voltam no resultado.</p></div>
     </div>
     <div class="l-panel l-anon"><b>Exemplo, no caso trabalhista de teste:</b>
@@ -206,6 +206,6 @@
       </main>
     </div>
   </div>
-  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=13"></script><script src="acta-ai.js?v=13"></script><script src="app.js?v=13"></script>
+  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=14"></script><script src="acta-ai.js?v=14"></script><script src="app.js?v=14"></script>
 </body>
 </html>

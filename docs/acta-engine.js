@@ -41,10 +41,14 @@
     let pages;
     if (ext === "pdf") pages = await readPdf(buffer);
     else if (ext === "docx") pages = [(await global.mammoth.extractRawText({ arrayBuffer: buffer })).value];
-    else if (["txt", "md"].includes(ext)) pages = [new TextDecoder().decode(buffer)];
+    else if (["txt", "md"].includes(ext)) {
+      let t = new TextDecoder("utf-8").decode(buffer);
+      if (t.includes("\ufffd")) t = new TextDecoder("windows-1252").decode(buffer); // arquivo salvo no Windows
+      pages = [t];
+    }
     else throw new Error(`Formato não suportado: ${name}. Use PDF, DOCX, TXT ou MD.`);
     pages = pages.map(p => p.split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n"));
-    if (!pages.some(Boolean)) throw new Error(`Não foi possível ler texto de ${name}. Se for PDF digitalizado (imagem), ele precisa de OCR.`);
+    if (!pages.some(Boolean)) throw new Error(ext === "pdf" ? `Não há texto em ${name}: parece um PDF digitalizado (imagem). Ele precisa passar por OCR antes.` : `O arquivo ${name} está vazio.`);
     const text = pages.map((p, i) => p ? `${PAGE_MARK(i + 1)}\n${p}` : "").filter(Boolean).join("\n");
     return { name, text, pages: pages.length };
   }

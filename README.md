@@ -43,7 +43,7 @@ No caso trabalhista de exemplo, a Acta mostra que a reclamante diz ter recebido 
 
 O site não é uma maquete. Ele lê os PDFs, DOCX ou TXT que você escolher (ou os casos de exemplo) e processa tudo no próprio navegador, com uma versão em JavaScript do mesmo motor da Acta (`docs/acta-engine.js`). Nada sai do computador no modo padrão.
 
-- **Construir:** escolha os arquivos, a tarefa (cronologia, relatório, comparação, organização, riscos ou uma tarefa livre), responda três perguntas, revise o plano, aprove e veja o resultado com documento e página em cada linha. Baixe ou copie em Markdown.
+- **Construir:** escolha os arquivos (PDF, DOCX ou TXT, ou a cópia integral do PJe num PDF só, que a Acta separa peça por peça), a tarefa (cronologia, relatório, comparação, organização, riscos ou uma tarefa livre), responda três perguntas, revise o plano, aprove e veja o resultado com documento e página em cada linha. Baixe em Markdown ou em planilha (.csv), ou copie. Se os arquivos forem de processos diferentes, a Acta avisa.
 - **IA de verdade (`docs/acta-ai.js`):** aberto dentro do Claude, o site usa o próprio Claude, sem chave. No GitHub Pages, cole uma chave da Anthropic ou da OpenAI em Configurações; ela fica só no navegador. Antes de enviar, o site mostra a tabela de anonimização e o texto exato que vai sair. Na volta, cada trecho citado pela IA é procurado no documento: o que não for achado aparece como "não localizado".
 - **Skills:** salve o resultado como skill. Na próxima vez, clique nela, escolha os arquivos do novo processo e ela roda com o plano já aprovado.
 - **Histórico:** registra cada execução feita naquele navegador e o que foi enviado para fora.
