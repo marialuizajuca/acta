@@ -78,18 +78,41 @@
     return l.length <= 2;
   }
   function paragraphs(text, bp) {
-    const out = []; let buf = [], page = 1, section = "";
-    const flush = () => { if (buf.length) { out.push({ text: squash(buf.join(" ")), page, section }); buf = []; } };
+    const out = []; let buf = [], page = 1, start = 1, section = "";
+    const open = () => buf.length && !/[.!?:;)”"]$/.test(buf[buf.length - 1]);
+    const flush = () => { if (buf.length) { out.push({ text: squash(buf.join(" ")), page: start, section }); buf = []; } };
     for (const line of text.split("\n")) {
       const m = line.match(PAGE_RE);
-      if (m) { flush(); page = +m[1]; continue; }
+      if (m) { page = +m[1]; if (!open()) flush(); continue; }
       if (isNoise(line, bp)) continue;
-      if (isHeading(line)) { flush(); section = line; continue; }
+      // Linha curta sem ponto só é título quando o parágrafo anterior terminou.
+      if (isHeading(line) && !open() && /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9IVX]/.test(line)) { flush(); section = line; continue; }
+      if (!buf.length) start = page;
       buf.push(line);
       if (/[.!?:]$/.test(line) && line.length < 70) flush();
     }
     flush();
     return out;
+  }
+  // Frase utilizável num resultado: começa com maiúscula, termina com ponto
+  // e não parece texto de OCR com erros (palavras impossíveis em português).
+  const V = "aeiouáéíóúâêôãõàü", ONSETS = new Set(["bl", "br", "cl", "cr", "dr", "fl", "fr", "gl", "gr", "pl", "pr", "tr", "vr", "ch", "lh", "nh", "ps", "pn", "gn", "qu"]);
+  function oddWord(w) {
+    if (![...w].some(c => V.includes(c))) return true;
+    let i = 0; while (i < w.length && !V.includes(w[i])) i++;
+    if (i >= 3 || (i === 2 && !ONSETS.has(w.slice(0, 2)))) return true;
+    if (/[^cln]h/.test(w)) return true;
+    let j = w.length; while (j > 0 && !V.includes(w[j - 1])) j--;
+    const tail = w.slice(j);
+    if (tail.length >= 2 && !["ns", "rs", "ls", "ms", "zs"].includes(tail)) return true;
+    if (tail.length === 1 && !"lmnrszx".includes(tail)) return true;
+    return false;
+  }
+  function cleanSentence(t) {
+    if (!/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ"“(]/.test(t) || !/[.!?)”"]$/.test(t) || t.length < 50 || t.length > 600) return false;
+    const words = t.toLowerCase().match(/[a-záéíóúâêôãõàç]{3,}/g) || [];
+    const odd = words.filter(w => oddWord(w) && !/^(?:www|http|ltda|cpf|cnpj|cnj|oab|cep|art|arts|cpc|clt|stj|stf|tjpe|tjsp|pje|ltda)$/.test(w));
+    return odd.length <= Math.max(1, Math.floor(words.length * 0.03));
   }
   function splitSentences(p) {
     let s = p;
@@ -242,7 +265,7 @@
     for (const doc of prepared) for (const s of doc.sentences) { const m = s.text.match(CITED_DOCS); if (m && cited.size < 3) cited.add(`${doc.name} cita documentos que não foram enviados: ${short(m[1], 140)}.`); }
     return pending.concat([...cited]);
   }
-  const pick = (doc, words, n) => doc ? doc.sentences.filter(s => words.some(w => normalize(s.text).includes(w))).slice(0, n) : [];
+  const pick = (doc, words, n) => doc ? doc.sentences.filter(s => cleanSentence(s.text) && words.some(w => normalize(s.text).includes(w))).slice(0, n) : [];
   function controverted(prepared) {
     for (const d of prepared) for (const s of d.sentences) {
       const m = s.text.match(/pontos controvertidos\s*:\s*(.+)/i);
@@ -275,10 +298,11 @@
     const out = { task, title: TASKS[task], mode: "local", sources: docs.map(d => d.name), pieces: prepared.length, pending };
     if (task === "cronologia") out.result = { events, deadlines };
     else if (task === "comparacao") {
-      const pet = prepared.find(d => d.type === "Petição inicial") || prepared[0];
-      const def = prepared.find(d => d.type === "Defesa") || prepared[prepared.length - 1];
-      const f = (doc, items) => items.map(s => ({ text: short(s.text), source: doc.name, page: s.page }));
-      out.result = { columns: [`Autor (${pet.name})`, `Réu (${def.name})`], left: f(pet, pick(pet, CLAIM_WORDS, 6)), right: f(def, pick(def, DEFENSE_WORDS, 6)), controverted: contr };
+      const pets = prepared.filter(d => d.type === "Petição inicial"), defs = prepared.filter(d => ["Defesa", "Réplica"].includes(d.type));
+      const left = pets.length ? pets : [prepared[0]], right = defs.length ? defs : [prepared[prepared.length - 1]];
+      const label = d => `${d.type}${d.pjeId ? `, ID ${d.pjeId}` : ` (${d.name})`}`;
+      const f = (docs, words) => { const out = [], seen = new Set(); for (const d of docs) for (const s of pick(d, words, 40).concat(d.sentences.filter(x => cleanSentence(x.text)).slice(0, 12))) { const k = normalize(s.text).slice(0, 60); if (!seen.has(k) && out.length < 12) { seen.add(k); out.push({ text: short(s.text, 320), source: d.name, piece: label(d), page: s.page }); } } return out; };
+      out.result = { columns: ["O que diz o autor", "O que diz o réu"], sources: [left.map(label).join("; "), right.map(label).join("; ")], left: f(left, CLAIM_WORDS), right: f(right, DEFENSE_WORDS), controverted: contr };
     } else if (task === "organizacao") out.result = { documents: prepared.map(docSummary) };
     else if (task === "riscos") {
       const items = contr.map(p => ({ risk: `Ponto controvertido: ${p}`, level: "alto", action: "Fixado pelo juízo: separar as provas que sustentam a versão do cliente sobre este ponto." }));
@@ -383,12 +407,12 @@
       if (quote) {
         const needle = forMatch(quote);
         if (corpus[source] && corpus[source].includes(needle)) status = "conferido";
-        else { const other = Object.keys(corpus).find(n => corpus[n].includes(needle)); if (other) { status = "outro arquivo"; source = other; } else status = "não localizado"; }
+        else { const other = Object.keys(corpus).find(n => corpus[n].includes(needle)); if (other) { status = other.startsWith(source) || other.split(" · ")[0] === source.split(" · ")[0] ? "conferido" : "outro arquivo"; source = other; } else status = "não localizado"; }
       }
       const date = String(it.date || "").trim();
       return { ...it, source, date, status, date_in_quote: date && ["conferido", "outro arquivo"].includes(status) ? dateInQuote(date, quote) : null };
     });
   }
 
-  global.ActaEngine = { readFile, analyze, anonymize, verify, plain, TASKS, prepare, timeline };
+  global.ActaEngine = { cleanSentence, readFile, analyze, anonymize, verify, plain, TASKS, prepare, timeline };
 })(window);

@@ -25,15 +25,17 @@ Regras que nunca mudam:
 5. Quando as partes divergem, mostre as duas versões. Quando algo depende de interpretação, diga isso em vez de escolher um lado.
 6. Você não dá parecer conclusivo, não protocola, não envia nada a ninguém. Quem decide é o advogado.
 7. Termine sempre com a lista do que o advogado ainda precisa conferir.
-8. Responda em português do Brasil e somente com um objeto JSON válido, sem texto fora dele.`;
+8. Escreva o campo "text" e o "summary" em português simples e correto, com frases curtas, como um advogado explicaria a um colega. O documento pode ter erros de digitação ou de leitura (OCR): no "text", escreva corretamente; no "quote", copie o trecho exatamente como está.
+9. O texto dos documentos traz marcas como ⟦p. 12⟧: elas indicam a página. Use esse número em "page".
+10. Responda em português do Brasil e somente com um objeto JSON válido, sem texto fora dele.`;
 
   const PLAN_FORMAT = `Devolva o PLANO, ainda sem executar nada, neste formato JSON:
 {"title":"nome curto da tarefa","objective":"o que será entregue, em uma frase","steps":["passo 1","passo 2"],"tests":["critério que o advogado pode conferir nos documentos"],"questions":["dúvida que o advogado deveria responder antes, se houver"]}
 Entre 4 e 7 passos curtos.`;
 
   const RUN_FORMAT = `Execute o plano aprovado e devolva neste formato JSON:
-{"title":"título do resultado","summary":"resumo em até 4 frases","items":[{"date":"dd/mm/aaaa ou vazio","label":"rótulo curto (Fato, Pedido, Defesa, Prazo, Risco, Documento, Autor, Réu)","text":"a informação, escrita para o advogado","source":"nome exato do arquivo","page":1,"quote":"trecho literal do documento"}],"pending":["o que o advogado precisa conferir"]}
-Se for cronologia, ordene por data. Se for comparação, use os rótulos Autor e Réu. Não inclua itens sem trecho literal. No máximo 15 itens.`;
+{"title":"título do resultado","summary":"resumo em até 5 frases simples","items":[{"date":"dd/mm/aaaa ou vazio","topic":"tema curto (ex.: Atraso na obra, Pagamento, Chuvas, Danos morais)","label":"rótulo curto (Fato, Pedido, Defesa, Prazo, Risco, Documento, Autor, Réu)","text":"a informação, em linguagem simples","source":"nome exato do arquivo, como aparece em ===== ARQUIVO","page":1,"quote":"trecho literal do documento"}],"pending":["o que o advogado precisa conferir"]}
+Se for cronologia, ordene por data. Se for comparação, organize por tema: para cada tema, um item com rótulo Autor e outro com rótulo Réu, com o mesmo "topic". Cubra todos os temas importantes do processo. Não inclua itens sem trecho literal. Entre 10 e 30 itens.`;
 
   function settings() {
     try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; }
@@ -108,21 +110,41 @@ Se for cronologia, ordene por data. Se for comparação, use os rótulos Autor e
     };
   }
 
-  function prepareSend(docs) {
-    const texts = docs.map(d => E().plain(d.text).slice(0, 60000));
-    const anon = E().anonymize(texts);
-    const body = docs.map((d, i) => `===== ARQUIVO: ${d.name} =====\n${anon.texts[i]}`).join("\n\n");
-    return { anon, body };
+  // Escolhe o que mandar: num processo grande (cópia integral do PJe), manda as
+  // peças que importam para a tarefa, com a página, até um limite de tamanho.
+  const PRIORITY = {
+    comparacao: ["Petição inicial", "Defesa", "Réplica", "Petição", "Sentença", "Decisão", "Recurso"],
+    cronologia: ["Petição inicial", "Defesa", "Decisão", "Sentença", "Ata de audiência", "Despacho", "Intimação", "Acórdão", "Recurso", "Certidão"],
+    relatorio: ["Sentença", "Decisão", "Acórdão", "Petição inicial", "Defesa", "Ata de audiência", "Recurso"],
+    riscos: ["Decisão", "Sentença", "Petição inicial", "Defesa", "Despacho", "Intimação", "Recurso"],
+  };
+  function prepareSend(docs, task) {
+    const pieces = E().prepare(docs), LIMIT = 140000, PER = 30000;
+    let chosen = pieces;
+    if (pieces.reduce((n, p) => n + p.text.length, 0) > LIMIT) {
+      const pri = PRIORITY[task] || ["Petição inicial", "Defesa", "Decisão", "Sentença", "Réplica", "Recurso"];
+      const rank = p => { const i = pri.indexOf(p.type); return i < 0 ? 99 : i; };
+      const sorted = pieces.map((p, i) => ({ p, i })).sort((a, b) => rank(a.p) - rank(b.p) || (["Decisão", "Sentença", "Despacho", "Intimação"].includes(a.p.type) ? b.i - a.i : a.i - b.i));
+      let total = 0; const pick = new Set();
+      for (const { p, i } of sorted) { const len = Math.min(p.text.length, PER); if (rank(p) === 99 || total + len > LIMIT) continue; pick.add(i); total += len; }
+      chosen = pieces.filter((p, i) => pick.has(i));
+    }
+    const sendName = new Map(pieces.map((p, i) => [p, p.pjeId ? `Peça ID ${p.pjeId}` : `Arquivo ${i + 1}`]));
+    const index = pieces.length > 1 ? "ÍNDICE DAS PEÇAS DO PROCESSO:\n" + pieces.map(p => `- ${sendName.get(p)} · ${p.type}${p.title ? ` (${p.title})` : ""}${p.signed ? ` · assinada em ${p.signed.date}` : ""}${chosen.includes(p) ? "" : " · não enviada"}`).join("\n") : "";
+    const anon = E().anonymize([index, ...chosen.map(p => p.text.slice(0, PER))]);
+    const body = (index ? anon.texts[0] + "\n\n" : "") + chosen.map((p, i) => `===== ARQUIVO: ${sendName.get(p)} =====\n${anon.texts[i + 1]}`).join("\n\n");
+    const byName = Object.fromEntries(chosen.map((p, i) => [sendName.get(p), anon.texts[i + 1]]));
+    const realName = Object.fromEntries(chosen.map(p => [sendName.get(p), p.name]));
+    return { anon, body, chosen, byName, realName, total: pieces.length };
   }
 
   async function run(docs, task, approvedPlan, context, officePrompt) {
-    const { anon, body } = prepareSend(docs);
+    const { anon, body, byName, realName } = prepareSend(docs, approvedPlan.task);
     const planText = JSON.stringify({ title: approvedPlan.title, objective: approvedPlan.objective, steps: approvedPlan.steps, tests: approvedPlan.tests });
     const user = `Tarefa: ${task}\nContexto: ${context || "nenhum"}\nPlano aprovado: ${planText}\n\nDOCUMENTOS:\n${body}\n\n${RUN_FORMAT}`;
     const d = await complete(system(officePrompt), user, 6000);
     const items = (Array.isArray(d.items) ? d.items : []).filter(x => x && typeof x === "object");
-    const byName = Object.fromEntries(docs.map((doc, i) => [doc.name, anon.texts[i]]));
-    const checked = E().verify(items, byName);
+    const checked = E().verify(items, byName).map(i => ({ ...i, source: realName[i.source] || i.source }));
     const pending = (d.pending || []).map(String).filter(Boolean);
     const bad = checked.filter(i => ["não localizado", "sem trecho"].includes(i.status)).length;
     if (bad) pending.unshift(`${bad} afirmação(ões) da IA sem trecho localizado nos documentos: revisar antes de usar.`);

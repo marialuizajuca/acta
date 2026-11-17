@@ -25,6 +25,7 @@ const LOCAL_PLAN = {
   riscos: ["Partir dos pontos controvertidos fixados pelo juízo", "Marcar prazos, excludentes alegadas e valores", "Montar o mapa de riscos com a prova necessária"],
 };
 
+const CLAUDE_URL = "https://claude.ai/artifact/Sqad48sNr27gpyXKH8EfaA";
 const state = { files: [], docs: null, task: "cronologia", plan: null, result: null, skill: null, sample: null };
 
 // ---------- utilidades ----------
@@ -98,7 +99,7 @@ async function refreshAi() {
   const st = await AI.status(); aiAvailable = st.available;
   $("#useAi").disabled = !st.available; if (!st.available) $("#useAi").checked = false;
   $("#aiLabel").textContent = st.available ? "Usar IA (texto anonimizado)" : "IA desligada";
-  $("#aiStatusLine").innerHTML = st.available ? `IA conectada: ${esc(st.label)}.` : `Sem IA conectada: a Acta funciona no modo local, sem enviar nada. <a href="#" id="goSettings">Conectar IA</a>`;
+  $("#aiStatusLine").innerHTML = st.available ? `IA conectada: ${esc(st.label)}.` : `Sem IA: a Acta funciona no modo local, copiando trechos do processo. Para resultados em linguagem simples, <a href="${CLAUDE_URL}" target="_blank">abra a Acta dentro do Claude</a> (IA sem chave) ou <a href="#" id="goSettings">conecte uma chave</a>.`;
   const g = $("#goSettings"); if (g) g.addEventListener("click", e => { e.preventDefault(); showView("settings"); });
   return st;
 }
@@ -174,9 +175,9 @@ function renderPlan(plan, warning, useAi) {
 function renderAnon() {
   const card = $("#anonCard");
   if (!$("#allowExternal").checked || !state.docs) { card.classList.add("is-hidden"); return; }
-  const { anon, body } = AI.prepareSend(state.docs);
+  const { anon, body, chosen, total: pieces } = AI.prepareSend(state.docs, state.task);
   const total = anon.found.reduce((n, f) => n + f.occurrences, 0);
-  $("#anonSummary").textContent = `${anon.found.length} dado(s) identificável(is), em ${total} ocorrência(s), viram códigos. A tabela abaixo fica só aqui.`;
+  $("#anonSummary").textContent = `${pieces > chosen.length ? `O processo tem ${pieces} peças; vão as ${chosen.length} mais importantes para esta tarefa. ` : ""}${anon.found.length} dado(s) identificável(is), em ${total} ocorrência(s), viram códigos. A tabela abaixo fica só aqui.`;
   $("#anonTable").innerHTML = anon.found.map(f => `<tr><td>${esc(f.value)}</td><td><code>${esc(f.code)}</code></td></tr>`).join("") || "<tr><td>Nenhum dado identificável encontrado.</td></tr>";
   $("#anonPreview").textContent = body.slice(0, 2500);
   card.classList.remove("is-hidden");
@@ -201,7 +202,7 @@ async function execute({ fromSkill }) {
     let out;
     if (useAi) {
       progress(55, "Trocando nomes e documentos por códigos e enviando à IA...");
-      try { out = await AI.run(docs, $("#requestText").value, state.plan, context(), store.get("acta.officePrompt", "")); out.task = state.task; out.sources = docs.map(d => d.name); }
+      try { out = await AI.run(docs, $("#requestText").value, { ...state.plan, task: state.task }, context(), store.get("acta.officePrompt", "")); out.task = state.task; out.sources = docs.map(d => d.name); }
       catch (err) { if (state.task === "outro") throw err; toast(`${err.message} Usando o modo local.`); }
       progress(85, "Conferindo cada trecho citado no documento original...");
     }
@@ -219,9 +220,16 @@ async function execute({ fromSkill }) {
 $("#rerun").addEventListener("click", () => execute({ fromSkill: state.skill }));
 
 // ---------- resultado ----------
-const src = (n, p) => `${esc(n)}${p ? `, p. ${p}` : ""}`;
+const src = (n, p) => `${esc(String(n || "").includes(" · ID") ? "Peça " + String(n).split(" · ").pop() : n)}${p ? `, p. ${p}` : ""}`;
 function renderBody(out) {
   const r = out.result;
+  if (out.mode === "ia" && out.task === "comparacao" && out.items.some(i => i.topic)) {
+    const v = out.verification, topics = [...new Set(out.items.map(i => i.topic || "Outros"))];
+    const cell = i => i ? `${esc(i.text)}<q>${esc(i.quote || "")}</q><small class="r-src">${src(i.source, i.page)}</small> <span class="r-badge ${i.status === "conferido" ? "ok" : "bad"}">${esc(i.status)}</span>` : '<span class="r-src">Não tratou deste tema.</span>';
+    const side = (t, re) => out.items.filter(i => (i.topic || "Outros") === t && re.test(i.label || ""));
+    return `${out.summary ? `<p class="r-summary">${esc(out.summary)}</p>` : ""}<div class="r-metrics"><div><span>Temas</span><b>${topics.length}</b></div><div><span>Trechos conferidos no processo</span><b>${v.confirmed} de ${v.total}</b></div><div><span>Sem trecho localizado</span><b class="${v.not_found ? "bad-text" : ""}">${v.not_found}</b></div></div>
+      <table class="r-table"><thead><tr><th>Tema</th><th>O que diz o autor</th><th>O que diz o réu</th></tr></thead><tbody>${topics.map(t => { const A = side(t, /autor|pedido|fato/i), R = side(t, /r[ée]u|defesa/i); return `<tr><td><b>${esc(t)}</b></td><td>${A.map(cell).join("<hr>") || cell()}</td><td>${R.map(cell).join("<hr>") || cell()}</td></tr>`; }).join("")}</tbody></table>`;
+  }
   if (out.mode === "ia") {
     const v = out.verification, cls = { "conferido": "ok", "outro arquivo": "warn", "não localizado": "bad", "sem trecho": "bad" };
     return `${out.summary ? `<p class="r-summary">${esc(out.summary)}</p>` : ""}<div class="r-metrics"><div><span>Afirmações</span><b>${v.total}</b></div><div><span>Conferidas no arquivo citado</span><b>${v.confirmed}</b></div><div><span>Sem trecho localizado</span><b class="${v.not_found ? "bad-text" : ""}">${v.not_found}</b></div></div>
@@ -229,7 +237,7 @@ function renderBody(out) {
       <details class="r-anon"><summary>O que saiu do computador (${out.anonymization.sent_characters} caracteres, ${out.anonymization.replaced.length} dados trocados por código)</summary><p>${out.anonymization.replaced.map(x => `<code>${esc(x.code)}</code> ×${x.occurrences}`).join(" · ") || "Nenhum dado identificável."}</p><pre>${esc(out.anonymization.sent_preview)}</pre></details>`;
   }
   if (out.task === "cronologia") return `<table class="r-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>${r.events.map(e => `<tr><td class="nowrap"><b>${e.date}${e.end_date ? ` a ${e.end_date}` : ""}</b>${e.note ? '<br><span class="r-badge warn">ano inferido</span>' : ""}${e.kind === "juntada" ? '<br><span class="r-badge ok">movimentação</span>' : ""}</td><td>${esc(e.event)}</td><td class="r-src">${src(e.source, e.page)}</td></tr>`).join("") || '<tr><td colspan="3">Nenhuma data encontrada.</td></tr>'}${r.deadlines.map(d => `<tr><td class="nowrap"><b>Prazo: ${esc(d.deadline)}</b></td><td>${esc(d.event)}</td><td class="r-src">${src(d.source, d.page)}</td></tr>`).join("")}</tbody></table>`;
-  if (out.task === "comparacao") { const col = xs => `<ul>${xs.map(x => `<li>${esc(x.text)} <small class="r-src">(p. ${x.page})</small></li>`).join("") || "<li>Nada encontrado.</li>"}</ul>`; return `<div class="r-two"><div><h3>${esc(r.columns[0])}</h3>${col(r.left)}</div><div><h3>${esc(r.columns[1])}</h3>${col(r.right)}</div></div>${r.controverted.length ? `<div class="r-block"><h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`; }
+  if (out.task === "comparacao") { const col = xs => `<ul>${xs.map(x => `<li>“${esc(x.text)}” <small class="r-src">(${esc(x.piece || "")}, p. ${x.page})</small></li>`).join("") || "<li>Nenhum trecho legível encontrado.</li>"}</ul>`; return `<div class="r-two"><div><h3>${esc(r.columns[0])}</h3><small class="r-src">${esc((r.sources || [])[0] || "")}</small>${col(r.left)}</div><div><h3>${esc(r.columns[1])}</h3><small class="r-src">${esc((r.sources || [])[1] || "")}</small>${col(r.right)}</div></div>${r.controverted.length ? `<div class="r-block"><h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`; }
   if (out.task === "organizacao") return `<div class="r-docs">${r.documents.map(d => `<article><span>${esc(d.type)}${d.process ? ` · ${esc(d.process)}` : ""}</span><h3>${esc(d.title || d.name)}</h3><p>${esc(d.summary)}</p><small class="r-src">${esc(d.name)} · ${d.pages} p.</small></article>`).join("")}</div>`;
   if (out.task === "riscos") return `<div class="r-risks">${r.items.map(x => `<article><span class="r-badge ${x.level === "alto" ? "bad" : "warn"}">${esc(x.level.toUpperCase())}</span><h3>${esc(x.risk)}</h3><p>${esc(x.action)}</p>${x.quote ? `<q class="r-quote">${esc(x.quote)}</q>` : ""}${x.source ? `<small class="r-src">${src(x.source, x.page)}</small>` : ""}</article>`).join("")}</div>`;
   return `<div class="r-metrics"><div><span>Documentos lidos</span><b>${r.documents.length}</b></div><div><span>Valores encontrados</span><b>${esc(r.amounts.join(" · ") || "Nenhum")}</b></div><div><span>Evento mais recente</span><b>${r.last_event ? esc(r.last_event.date) : "—"}</b></div></div>
@@ -253,8 +261,10 @@ function renderResult(out, fromSkill) {
   $("#resSub").textContent = fromSkill ? "Mesmo pedido, mesmo plano, arquivos novos." : "Cada linha mostra de onde veio. Se estiver bom, salve como skill.";
   $("#resPill").textContent = out.mode === "ia" ? "Feito com IA" : "Modo local";
   const note = $("#resultNote");
-  note.textContent = fromSkill ? `Resultado da skill "${fromSkill.name}", com o plano aprovado quando ela foi salva. Arquivos: ${out.sources.join(", ")}.` : "";
-  note.classList.toggle("is-hidden", !fromSkill);
+  const localNote = out.mode !== "ia" ? `Modo local: a Acta copia os trechos do processo como estão, sem reescrever (erros de digitação do original aparecem aqui). ${aiAvailable ? '<a href="#" id="redoAi">Refazer com IA em linguagem simples →</a>' : `Para um resultado escrito em linguagem simples, use a IA: <a href="${CLAUDE_URL}" target="_blank">abra a Acta dentro do Claude</a> ou conecte uma chave em Configurações.`}` : "";
+  note.innerHTML = (fromSkill ? `Resultado da skill "<b>${esc(fromSkill.name)}</b>", com o plano aprovado quando ela foi salva. ` : "") + localNote;
+  note.classList.toggle("is-hidden", !note.innerHTML);
+  const redo = $("#redoAi"); if (redo) redo.addEventListener("click", async e => { e.preventDefault(); $("#useAi").checked = true; $("#allowExternal").checked = true; if (!state.plan || state.plan.mode !== "ia") { try { await buildPlan(); } catch (err) { return toast(err.message); } $("#allowExternal").checked = true; } execute({ fromSkill: state.skill }); });
   $("#skillName").value = state.task === "outro" ? ($("#requestText").value.slice(0, 50)) : info.name;
   $("#skillDesc").value = state.task === "outro" ? $("#requestText").value : info.desc;
 }
