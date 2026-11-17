@@ -41,6 +41,7 @@ function enterApp(view) { $("#loginView").classList.add("is-hidden"); $("#appVie
 
 // ---------- entrada e navegação ----------
 $("#loginButton").addEventListener("click", () => enterApp("builder"));
+$$(".l-try").forEach(b => b.addEventListener("click", () => enterApp("builder")));
 $("#openCase").addEventListener("click", () => enterApp("case-demo"));
 $("#backHome").addEventListener("click", () => { $("#appView").classList.add("is-hidden"); $("#loginView").classList.remove("is-hidden"); scrollTo({ top: 0 }); });
 $$(".nav-item").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));
@@ -290,6 +291,20 @@ $("#download").addEventListener("click", () => {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([resultMarkdown()], { type: "text/markdown" })); a.download = TASK_INFO[out.task].file; a.click(); URL.revokeObjectURL(a.href);
 });
 
+function resultRows(out) {
+  const r = out.result, S = (n, p) => `${String(n || "").includes(" · ID") ? "Peça " + String(n).split(" · ").pop() : n || ""}${p ? `, p. ${p}` : ""}`;
+  if (out.mode === "ia") return [["Data", "Tema", "Rótulo", "Informação", "Trecho do documento", "Fonte", "Conferência"], ...out.items.map(i => [i.date || "", i.topic || "", i.label || "", i.text || "", i.quote || "", S(i.source, i.page), i.status])];
+  if (out.task === "cronologia") return [["Data", "Até", "Evento", "Fonte", "Observação"], ...r.events.map(e => [e.date, e.end_date || "", e.event, S(e.source, e.page), e.kind === "juntada" ? "movimentação" : e.note || ""]), ...r.deadlines.map(d => ["Prazo: " + d.deadline, "", d.event, S(d.source, d.page), "conferir a intimação"])];
+  if (out.task === "comparacao") return [["Parte", "Trecho", "Fonte"], ...r.left.map(x => ["Autor", x.text, `${x.piece || ""}, p. ${x.page}`]), ...r.right.map(x => ["Réu", x.text, `${x.piece || ""}, p. ${x.page}`]), ...r.controverted.map(x => ["Ponto controvertido", x, ""])];
+  if (out.task === "organizacao") return [["Tipo", "Título", "Assinada em", "Páginas", "Resumo", "ID"], ...r.documents.map(d => [d.type, d.title, d.signed || "", d.first === d.last ? d.first : `${d.first}-${d.last}`, d.summary, d.id || d.name])];
+  if (out.task === "riscos") return [["Nível", "Risco", "O que fazer", "Trecho", "Fonte"], ...r.items.map(x => [x.level, x.risk, x.action, x.quote || "", x.source ? S(x.source, x.page) : ""])];
+  return [["Item", "Conteúdo", "Fonte"], ["Resumo", r.summary, ""], ["Situação atual", r.status, r.status_source || ""], ...(r.amount_list || []).map(x => ["Valor " + x.value, x.text, S(x.source, x.page)]), ...r.controverted.map(x => ["Ponto controvertido", x, ""])];
+}
+$("#downloadCsv").addEventListener("click", () => {
+  const out = state.result; if (!out) return;
+  const csv = "\ufeff" + resultRows(out).map(r => r.map(x => `"${String(x ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = TASK_INFO[out.task].file.replace(".md", ".csv"); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
+});
 $("#copyMd").addEventListener("click", async () => { try { await navigator.clipboard.writeText(resultMarkdown()); toast("Resultado copiado. Cole no Word ou no e-mail."); } catch (e) { toast("O navegador bloqueou a cópia."); } });
 
 // ---------- skills ----------

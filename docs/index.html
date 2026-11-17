@@ -5,14 +5,14 @@
   <meta name="description" content="Acta, assistente de programação por IA para advogados."><meta name="robots" content="index,follow">
   <link rel="canonical" href="https://acta-contratos.insper-1495.chatgpt.site"><title>Acta | Construa suas ferramentas jurídicas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=11">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
-  <div id="loginView"><main class="login-shell">
+  <div id="loginView"><nav class="l-topnav"><div class="l-wrap l-topnav-in"><a href="#" class="logo" onclick="scrollTo({top:0,behavior:'smooth'});return false">acta.</a><div class="l-toplinks"><a href="#landing-como">Como funciona</a><a href="#landing-exemplo">Exemplo</a><a href="#landing-testes">Testes</a><a href="#landing-dados">Seus dados</a><button type="button" class="button button-dark l-try">Experimentar →</button></div></div></nav><main class="login-shell">
     <section class="login-brand"><div class="logo logo-large">acta.</div><p class="eyebrow">Uma solução Actio</p><span class="business-badge">Para advogados de contencioso · escritórios e departamentos jurídicos</span><h1>Chegou um processo novo.<br>A Acta lê as peças por você.</h1><p class="lead">Você envia as peças (ou a cópia integral do PJe, num PDF só) e escolhe o que precisa: cronologia, relatório para o cliente, comparação das alegações ou mapa de riscos. A Acta mostra os passos que vai seguir, espera você aprovar e entrega cada informação com o documento e a página de onde saiu. O que funcionar fica salvo para o próximo processo.</p><div class="hero-steps"><span>1. Envie as peças</span><span>2. Aprove o plano</span><span>3. Confira na fonte</span><span>4. Salve a skill</span></div></section>
     <section class="login-panel"><div class="login-card"><p class="eyebrow">Demonstração aberta</p><h2>Veja a Acta funcionando</h2><p class="card-text">Sem cadastro e sem senha. Os casos são fictícios e os resultados são os que a Acta tirou dos PDFs de cada processo.</p><ol class="howto"><li>Entre na demonstração.</li><li>Escolha uma tarefa (cronologia, relatório, riscos…).</li><li>Responda três perguntas e aprove o plano.</li><li>Veja o resultado com a fonte de cada informação.</li></ol><button id="loginButton" class="button button-dark button-wide">Entrar na demonstração →</button><button id="openCase" class="button button-light button-wide">Ir direto ao caso Aurora × Delta</button><div class="card-links"><a href="https://github.com/marialuizajuca/acta" target="_blank">Código no GitHub ↗</a><a href="#landing-exemplo">Ver um resultado aqui ↓</a></div><p class="fine-print">Protótipo acadêmico da disciplina Ciência de Dados Aplicada ao Direito I (Insper). No modo padrão, os arquivos não saem do seu computador.</p></div></section>
   </main><div class="landing">
-  <section class="l-section l-who"><div class="l-wrap"><div class="l-grid3">
+  <section class="l-section l-who" id="landing-como"><div class="l-wrap"><div class="l-grid3">
     <div><p class="eyebrow">Para quem</p><h3>Advogados de contencioso</h3><p>Começamos por uma rotina só: entender um processo que acabou de chegar e explicar ao cliente onde ele está. Testamos com um caso cível e um trabalhista.</p></div>
     <div><p class="eyebrow">O problema</p><h3>Ler tudo de novo para conferir</h3><p>Montar a cronologia e o resumo de um processo é trabalho repetido. Uma IA comum até ajuda, mas não diz de onde tirou cada frase, recebe o nome do cliente como está e pode trazer informação de fora dos autos.</p></div>
     <div><p class="eyebrow">Onde está o ganho de tempo</p><h3>Você confere em vez de reler</h3><p>Cada linha aponta documento e página, e a Acta lista no fim o que ainda falta: prazos sem termo inicial, datas em que as partes divergem, documentos citados que não vieram.</p></div>
@@ -48,7 +48,7 @@
   </div></section>
 
   <section class="l-section"><div class="l-wrap">
-    <p class="eyebrow">A pergunta que todo advogado faz</p><h2>"Por que não usar o ChatGPT ou o Claude?"</h2>
+    <p class="eyebrow">A pergunta que todo advogado faz</p><h2>"Por que não usar o ChatGPT ou o Claude?"</h2><p class="l-lead">Não é sobre responder mais. É sobre conferir melhor.</p>
     <p class="l-sub">A gente testou. Com os mesmos PDFs e o mesmo pedido, o ChatGPT também achou todos os eventos. A diferença está no que acontece com os dados e em quem confere o resultado.</p>
     <div class="l-panel"><table class="l-table l-cmp"><thead><tr><th></th><th>ChatGPT</th><th>Acta</th></tr></thead><tbody>
       <tr><td>Eventos encontrados nos dois casos de teste</td><td>12 de 12</td><td>12 de 12</td></tr>
@@ -59,7 +59,18 @@
     </tbody></table></div>
   </div></section>
 
-  <section class="l-section"><div class="l-wrap">
+  <section class="l-section" id="landing-testes"><div class="l-wrap">
+    <p class="eyebrow">Testes</p><h2>O que medimos, e o que ainda não medimos</h2>
+    <p class="l-sub">Comparamos a cronologia com um gabarito montado a partir da leitura das peças, nos dois casos fictícios. Qualquer pessoa pode repetir o teste com <code>python avaliacao/avaliar.py</code>.</p>
+    <div class="l-table-wrap"><table class="l-table"><thead><tr><th></th><th>Primeira versão</th><th>Versão atual</th></tr></thead><tbody>
+      <tr><td>Eventos do gabarito encontrados</td><td>9 de 12</td><td><b>12 de 12</b></td></tr>
+      <tr><td>Eventos cortados no meio da frase</td><td>4 de 15</td><td><b>0</b></td></tr>
+      <tr><td>Documentos classificados errado</td><td>3 de 6</td><td><b>0</b></td></tr>
+      <tr><td>Datas diferentes do pagamento no caso trabalhista</td><td>não percebeu</td><td><b>percebeu</b></td></tr>
+    </tbody></table></div>
+    <p class="l-note"><b>Ressalva:</b> são dois casos pequenos, e ajustamos as regras depois de olhar para eles. Isso mostra que corrigimos os erros que encontramos, não que a Acta acerta em qualquer processo. Os números valem para o modo sem IA; o modo com IA ainda não foi medido contra o gabarito.</p>
+  </div></section>
+<section class="l-section" id="landing-dados"><div class="l-wrap">
     <p class="eyebrow">Seus dados</p><h2>O que sai do escritório, e o que não sai</h2>
     <div class="l-grid2">
       <div class="l-panel"><h3>Modo padrão</h3><p>Os documentos são lidos no próprio computador e não são gravados nem enviados. Funciona sem internet.</p></div>
@@ -148,7 +159,7 @@
   <div id="resultStage" class="stage">
     <div class="split-heading"><div><p class="eyebrow" id="resEyebrow">Resultado</p><h1 id="resTitle">Pronto.</h1><p id="resSub">Confira na fonte antes de usar.</p></div><span class="status-pill green" id="resPill">Concluído</span></div>
     <div id="resultNote" class="task-note is-hidden"></div>
-    <div class="result-layout"><article class="panel tool-preview"><div class="tool-header"><div class="tool-icon" id="toolIcon">C</div><div><h2 id="toolTitle">Resultado</h2><p id="toolMeta"></p></div><div class="tool-actions"><button id="rerun" class="button button-light">Executar de novo</button><button id="download" class="button button-light">Baixar (.md)</button><button id="copyMd" class="button button-light">Copiar</button></div></div><div id="resultBody"></div><div id="resultPending" class="r-pending is-hidden"><b>O que você ainda precisa conferir</b><ul></ul></div><div id="resultChecks" class="test-log"></div></article>
+    <div class="result-layout"><article class="panel tool-preview"><div class="tool-header"><div class="tool-icon" id="toolIcon">C</div><div><h2 id="toolTitle">Resultado</h2><p id="toolMeta"></p></div><div class="tool-actions"><button id="rerun" class="button button-light">Executar de novo</button><button id="download" class="button button-light">Baixar (.md)</button><button id="copyMd" class="button button-light">Copiar</button><button id="downloadCsv" class="button button-light">Planilha (.csv)</button></div></div><div id="resultBody"></div><div id="resultPending" class="r-pending is-hidden"><b>O que você ainda precisa conferir</b><ul></ul></div><div id="resultChecks" class="test-log"></div></article>
       <aside class="panel save-card" id="saveCard"><p class="eyebrow">Salvar como skill</p><h2>Repita no próximo processo.</h2><label>Nome da skill<input id="skillName" value="Cronologia processual"></label><label>Descrição<textarea id="skillDesc" rows="3"></textarea></label><button id="saveSkill" class="button button-dark button-wide">Salvar na biblioteca</button><p class="fine-print">A skill guarda o pedido, o contexto e o plano aprovado. Na próxima vez, basta escolher os arquivos e rodar.</p></aside></div>
   </div>
 </section>
@@ -195,6 +206,6 @@
       </main>
     </div>
   </div>
-  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=11"></script><script src="acta-ai.js?v=11"></script><script src="app.js?v=11"></script>
+  <div id="toast" class="toast" role="status"></div><script src="vendor/pdf.min.js"></script><script>pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";</script><script src="vendor/mammoth.browser.min.js"></script><script src="acta-engine.js?v=12"></script><script src="acta-ai.js?v=12"></script><script src="app.js?v=12"></script>
 </body>
 </html>

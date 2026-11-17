@@ -121,3 +121,9 @@
 .r-risks .r-badge{align-self:flex-start}
 .r-table hr{border:0;border-top:1px dashed var(--line);margin:8px 0}
 .composer-footer .ai-switch span{display:inline;font-size:12px}
+.l-topnav{position:sticky;top:0;z-index:20;background:rgba(250,249,246,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.l-topnav-in{display:flex;justify-content:space-between;align-items:center;height:60px}.l-topnav .logo{font-size:26px;text-decoration:none;color:var(--ink)}.l-toplinks{display:flex;gap:20px;align-items:center}.l-toplinks a{color:var(--ink);text-decoration:none;font-size:14px}.l-toplinks a:hover{color:var(--orange)}.l-try{padding:9px 14px}
+.l-lead{font-size:20px;font-weight:600;margin:-6px 0 12px}.l-table-wrap{overflow-x:auto}
+section[id^="landing-"]{scroll-margin-top:70px}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+@media(max-width:760px){.l-toplinks a{display:none}}
+#landing-testes td{font-size:14px}#landing-testes td b{color:var(--green);font-size:14px}
