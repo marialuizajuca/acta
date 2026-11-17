@@ -1,66 +1,338 @@
-const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const stages=['startStage','clarifyStage','planStage','buildStage','resultStage'];
-function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2600)}
-function showView(id){$$('.view').forEach(v=>v.classList.toggle('is-active',v.id===id));$$('.nav-item').forEach(b=>b.classList.toggle('is-active',b.dataset.view===id));$('.sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
-function showStage(id){stages.forEach(s=>$('#'+s).classList.toggle('is-active',s===id));const idx=stages.indexOf(id);$$('#stepper li').forEach((li,i)=>{li.classList.toggle('on',i===idx);li.classList.toggle('done',i<idx)});window.scrollTo({top:0,behavior:'smooth'})}
-$('#loginButton').addEventListener('click',()=>{$('#loginView').classList.add('is-hidden');$('#appView').classList.remove('is-hidden');showView('builder')});
-$$('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));$('#mobileMenu').addEventListener('click',()=>$('.sidebar').classList.toggle('open'));
-
-$$('.nav-examples').forEach(b=>b.addEventListener('click',()=>showView('examples')));
-$$('.use-example').forEach(b=>b.addEventListener('click',()=>{$('#requestText').value=b.dataset.prompt;showView('builder');showStage('startStage');$('#requestText').focus();toast('Exemplo carregado. Agora você pode adaptar o pedido.')}));
-const demoTitles={'client-report':'Relatório ao cliente','case-timeline':'Cronologia processual','claims-compare':'Comparação das alegações','doc-organizer':'Organização dos documentos','risk-map':'Mapa de riscos e provas'};
-function showDemoResult(id){$$('.demo-result').forEach(el=>el.classList.toggle('is-hidden',el.id!==id));$$('.demo-action').forEach(b=>b.classList.toggle('is-active',b.dataset.demoOutput===id));$('#demoOutputTitle').textContent=demoTitles[id];$('#demoReady').textContent='Resultado pronto'}
-$$('.demo-action').forEach(b=>b.addEventListener('click',()=>showDemoResult(b.dataset.demoOutput)));
-$('#runFullDemo').addEventListener('click',()=>{const button=$('#runFullDemo'),progress=$('#demoProgress'),steps=['Identificando fatos e pedidos','Relacionando informações às fontes','Gerando cronologia e mapa de riscos','Escrevendo relatório ao cliente'];button.disabled=true;progress.classList.remove('is-hidden');$$('.demo-result').forEach(el=>el.classList.add('is-hidden'));$('#demoReady').textContent='Processando';let i=0;$('#demoProgressText').textContent=steps[0];const timer=setInterval(()=>{i++;if(i<steps.length){$('#demoProgressText').textContent=steps[i]}else{clearInterval(timer);progress.classList.add('is-hidden');button.disabled=false;showDemoResult('client-report');toast('Análise concluída: 5 resultados disponíveis.')}},420)});
-$('#requestForm').addEventListener('submit',e=>{e.preventDefault();$('#skillNote').classList.add('is-hidden');const value=$('#requestText').value.trim();if(!value)return toast('Escolha uma tarefa ou escreva o pedido.');$('#userRequestPreview').textContent=value;setTask(detectTask(value));showStage('clarifyStage')});
-$('#requestText').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')$('#requestForm').requestSubmit()});
-$$('[data-back]').forEach(b=>b.addEventListener('click',()=>showStage(b.dataset.back)));
-$('#contextForm').addEventListener('submit',e=>{e.preventDefault();showStage('planStage')});
-$('#editPlan').addEventListener('click',()=>{showStage('clarifyStage');toast('Contexto reaberto para ajustes.')});
-$('#approvePlan').addEventListener('click',()=>{$('#resultNote').classList.add('is-hidden');$('#saveCard').classList.remove('is-hidden');$('#resEyebrow').textContent='Ferramenta construída';$('#resTitle').textContent='Sua skill passou nos testes.';$('#resSub').textContent='Confira o resultado antes de salvar para reutilização.';showStage('buildStage');runBuild()});
-function runBuild(){const statuses=['Validando permissões...','Lendo a estrutura dos documentos...','Construindo o extrator de eventos...','Gerando a tabela cronológica...','Executando os testes...'];const steps=$$('#buildSteps li');let value=0;steps.forEach(s=>s.classList.remove('done'));$('#progressBar').style.width='0%';$('#progressValue').textContent='0%';const timer=setInterval(()=>{value+=4;$('#progressBar').style.width=value+'%';$('#progressValue').textContent=value+'%';const current=Math.min(statuses.length-1,Math.floor(value/21));$('#buildStatus').textContent=statuses[current];steps.forEach((s,i)=>s.classList.toggle('done',i<Math.ceil(value/20)));if(value>=100){clearInterval(timer);$('#buildStatus').textContent='Ferramenta construída e testada.';setTimeout(()=>showStage('resultStage'),550)}},90)}
-$('#rerunTest').addEventListener('click',()=>{toast('Critérios conferidos de novo: 3 de 3 atendidos.')});
-$('#saveSkill').addEventListener('click',()=>{const t=TASKS[currentTask];$('#savedName').textContent=$('#skillName').value||t.name;$('#savedDesc').textContent=t.saved;$('#savedIcon').textContent=t.icon;$('#savedSkillCard').dataset.task=currentTask;$$('.use-skill:not(#savedSkillCard)').forEach(c=>c.classList.toggle('is-hidden',c.dataset.task===currentTask));$('#savedSkillCard').classList.remove('is-hidden');toast('Skill salva na biblioteca.');setTimeout(()=>showView('skills'),700)});
-$$('.nav-build').forEach(b=>b.addEventListener('click',()=>{showView('builder');showStage('startStage')}));$$('.nav-skills').forEach(b=>b.addEventListener('click',()=>showView('skills')));
-$$('.axis-card .text-button:not(.nav-skills)').forEach(b=>b.addEventListener('click',()=>toast('Configuração disponível no protótipo demonstrativo.')));
-
-function enterApp(view){$('#loginView').classList.add('is-hidden');$('#appView').classList.remove('is-hidden');showView(view);}
-$('#openCase').addEventListener('click',()=>enterApp('case-demo'));
-$('#backHome').addEventListener('click',()=>{$('#appView').classList.add('is-hidden');$('#loginView').classList.remove('is-hidden');window.scrollTo({top:0})});
-
-document.querySelectorAll('.l-tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.l-tab').forEach(x=>x.classList.toggle('on',x===t));document.querySelectorAll('.l-case').forEach(c=>c.classList.toggle('is-hidden',c.id!=='case-'+t.dataset.case));}));
-
-const TASKS={
- cronologia:{name:'Cronologia processual',icon:'C',meta:'3 documentos · 6 eventos · 1 prazo · 4 pontos a conferir',step5:'Gerar a tabela',step5p:'Criar colunas de data, evento, fonte e observação.',desc:'Organiza os eventos do processo por data, com documento, página e alertas de incerteza.',saved:'Eventos, datas, fontes e alertas.'},
- relatorio:{name:'Relatório ao cliente',icon:'R',meta:'3 documentos · situação atual, pontos favoráveis, atenção e próximos passos',step5:'Escrever o relatório',step5p:'Explicar a situação em linguagem simples, com os próximos passos.',desc:'Resume o processo para o cliente em linguagem simples, com pontos de atenção e próximos passos.',saved:'Situação do caso em linguagem simples.'},
- comparacao:{name:'Comparação das alegações',icon:'A',meta:'3 documentos · 4 temas comparados · pontos controvertidos',step5:'Montar a comparação',step5p:'Colocar lado a lado o que cada parte diz, tema por tema.',desc:'Compara o que autora e ré dizem sobre cada tema e indica o que conferir.',saved:'Autora × ré, tema por tema.'},
- organizacao:{name:'Organização dos documentos',icon:'D',meta:'3 documentos classificados por tipo',step5:'Gerar o índice',step5p:'Classificar cada peça por tipo e criar o índice.',desc:'Classifica as peças por tipo e gera um índice do caso.',saved:'Classificação e índice das peças.'},
- riscos:{name:'Mapa de riscos',icon:'!',meta:'3 documentos · 3 riscos com as provas necessárias',step5:'Montar o mapa de riscos',step5p:'Indicar cada risco, o nível e a prova necessária.',desc:'Aponta os riscos do caso, o nível de cada um e as provas necessárias.',saved:'Riscos, provas e pontos de atenção.'}
+/* Acta · interface. Tudo o que aparece aqui é calculado de verdade:
+ * os arquivos são lidos pelo motor (acta-engine.js) e, com IA conectada e
+ * permissão marcada, enviados anonimizados ao provedor (acta-ai.js). */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const E = window.ActaEngine, AI = window.ActaAI;
+const stages = ["startStage", "clarifyStage", "planStage", "buildStage", "resultStage"];
+const SAMPLES = {
+  civel: ["01-peticao-inicial-ficticia.pdf", "02-contestacao-ficticia.pdf", "03-decisao-ficticia.pdf"],
+  trabalhista: ["04-reclamacao-trabalhista-ficticia.pdf", "05-contestacao-trabalhista-ficticia.pdf", "06-ata-audiencia-trabalhista-ficticia.pdf"],
 };
-let currentTask='cronologia';
-function detectTask(text){const t=text.toLowerCase();if(/relat[oó]rio|cliente/.test(t))return 'relatorio';if(/compar|alega/.test(t))return 'comparacao';if(/organiz|[ií]ndice|classifi/.test(t))return 'organizacao';if(/risco|prova/.test(t))return 'riscos';if(/cronolog|data|linha do tempo|prazo|evento/.test(t))return 'cronologia';return 'outro'}
-function setTask(k){
-  const note=$('#taskNote');
-  if(k==='outro'){note.textContent='Nesta demonstração, a Acta tem resultados prontos para cronologia, relatório ao cliente, comparação das alegações, organização dos documentos e mapa de riscos. Vamos seguir com a cronologia. Pedidos diferentes desses ficam para o modo com IA da Acta instalada (veja o GitHub).';note.classList.remove('is-hidden');k='cronologia'}else{note.classList.add('is-hidden')}
-  currentTask=k;const t=TASKS[k];
-  $('#planTitle').textContent='Skill de '+t.name.toLowerCase();$('#buildTitle').textContent='Skill de '+t.name.toLowerCase();
-  $('#planStep5').textContent=t.step5;$('#planStep5p').textContent=t.step5p;
-  $('#toolTitle').textContent=t.name;$('#toolMeta').textContent=t.meta;$('#toolIcon').textContent=t.icon;
-  $('#skillName').value=t.name;$('#outFile').textContent={cronologia:'cronologia-processual.md',relatorio:'relatorio-ao-cliente.md',comparacao:'comparacao-alegacoes.md',organizacao:'indice-documentos.md',riscos:'mapa-de-riscos.md'}[k];$('#skillDesc').value=t.desc;
-  $$('.res').forEach(r=>r.classList.toggle('is-hidden',r.id!=='res-'+k));
-  $$('.task-card').forEach(c=>c.classList.toggle('on',c.dataset.task===k));
-}
-$$('.task-card').forEach(c=>c.addEventListener('click',()=>{$('#requestText').value=c.dataset.prompt;setTask(c.dataset.task);toast('Pedido preenchido. Agora clique em "Ver o plano".')}));
+const TASK_INFO = {
+  cronologia: { name: "Cronologia processual", icon: "C", file: "cronologia-processual.md", desc: "Eventos do processo por data, com documento, página e alertas." },
+  relatorio: { name: "Relatório ao cliente", icon: "R", file: "relatorio-ao-cliente.md", desc: "Situação do caso, valores, decisão e pontos de atenção." },
+  comparacao: { name: "Comparação das alegações", icon: "A", file: "comparacao-alegacoes.md", desc: "O que autora e ré dizem, lado a lado, e os pontos controvertidos." },
+  organizacao: { name: "Organização dos documentos", icon: "D", file: "indice-documentos.md", desc: "Tipo, título, processo e resumo de cada peça." },
+  riscos: { name: "Mapa de riscos", icon: "!", file: "mapa-de-riscos.md", desc: "Riscos, provas necessárias e o que conferir." },
+  outro: { name: "Tarefa personalizada", icon: "+", file: "resultado.md", desc: "Tarefa descrita pelo advogado, feita com IA." },
+};
+const LOCAL_PLAN = {
+  cronologia: ["Achar todas as datas, inclusive intervalos e datas sem ano", "Achar os prazos e avisar quando falta o termo inicial", "Montar a cronologia em ordem de data"],
+  relatorio: ["Identificar a situação atual pela decisão mais recente", "Reunir valores, pontos controvertidos e o último evento", "Escrever o relatório"],
+  comparacao: ["Separar o que diz a inicial e o que diz a defesa", "Colocar as alegações lado a lado", "Listar os pontos controvertidos fixados pelo juízo"],
+  organizacao: ["Identificar o tipo e o título de cada peça", "Achar o número do processo e resumir cada documento", "Montar o índice"],
+  riscos: ["Partir dos pontos controvertidos fixados pelo juízo", "Marcar prazos, excludentes alegadas e valores", "Montar o mapa de riscos com a prova necessária"],
+};
 
+const state = { files: [], docs: null, task: "cronologia", plan: null, result: null, skill: null, sample: null };
 
-function useSkill(card){
-  const k=card.dataset.task; const name=card.querySelector('b').textContent;
-  showView('builder'); setTask(k);
-  const prompt=$(`.task-card[data-task="${k}"]`).dataset.prompt;
-  $('#requestText').value=prompt; $('#userRequestPreview').textContent=prompt;
-  $('#skillNote').classList.add('is-hidden');
-  const rn=$('#resultNote'); rn.textContent=`Resultado gerado pela skill "${name}", com o plano que você aprovou quando a salvou. Os arquivos usados foram as três peças do caso Aurora × Delta.`; rn.classList.remove('is-hidden');
-  toast(`Executando a skill "${name}" com o plano salvo...`);$('#saveCard').classList.add('is-hidden');$('#resEyebrow').textContent='Skill executada';$('#resTitle').textContent='Pronto, sem refazer nada.';$('#resSub').textContent='Mesmo plano, mesmas regras, mesmo formato de resultado.';rn.classList.add('ok-note');
-  showStage('buildStage'); runBuild();
+// ---------- utilidades ----------
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 3000); }
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sem armazenamento */ } },
+};
+function showView(id) { $$(".view").forEach(v => v.classList.toggle("is-active", v.id === id)); $$(".nav-item").forEach(b => b.classList.toggle("is-active", b.dataset.view === id)); $(".sidebar").classList.remove("open"); scrollTo({ top: 0, behavior: "smooth" }); if (id === "skills") renderSkills(); if (id === "history") renderHistory(); if (id === "settings") renderAiPanel(); if (id === "case-demo") runCaseDemo(); }
+function showStage(id) { stages.forEach(s => $("#" + s).classList.toggle("is-active", s === id)); const i = stages.indexOf(id); $$("#stepper li").forEach((li, k) => { li.classList.toggle("on", k === i); li.classList.toggle("done", k < i); }); scrollTo({ top: 0, behavior: "smooth" }); }
+function enterApp(view) { $("#loginView").classList.add("is-hidden"); $("#appView").classList.remove("is-hidden"); showView(view); }
+
+// ---------- entrada e navegação ----------
+$("#loginButton").addEventListener("click", () => enterApp("builder"));
+$("#openCase").addEventListener("click", () => enterApp("case-demo"));
+$("#backHome").addEventListener("click", () => { $("#appView").classList.add("is-hidden"); $("#loginView").classList.remove("is-hidden"); scrollTo({ top: 0 }); });
+$$(".nav-item").forEach(b => b.addEventListener("click", () => showView(b.dataset.view)));
+$("#mobileMenu").addEventListener("click", () => $(".sidebar").classList.toggle("open"));
+$$(".nav-build").forEach(b => b.addEventListener("click", () => { clearSkill(); showView("builder"); showStage("startStage"); }));
+$$(".nav-examples").forEach(b => b.addEventListener("click", () => showView("examples")));
+$$("[data-back]").forEach(b => b.addEventListener("click", () => showStage(b.dataset.back)));
+$$(".l-tab").forEach(t => t.addEventListener("click", () => { $$(".l-tab").forEach(x => x.classList.toggle("on", x === t)); $$(".l-case").forEach(c => c.classList.toggle("is-hidden", c.id !== "case-" + t.dataset.case)); }));
+$$(".use-example").forEach(b => b.addEventListener("click", () => { clearSkill(); showView("builder"); showStage("startStage"); $("#requestText").value = b.dataset.prompt; setTask(detectTask(b.dataset.prompt)); toast("Exemplo carregado. Escolha os arquivos e clique em Ver o plano."); }));
+$$(".axis-card .text-button:not(.nav-skills)").forEach(b => b.addEventListener("click", () => showView("settings")));
+$$(".nav-skills").forEach(b => b.addEventListener("click", () => showView("skills")));
+
+// ---------- arquivos ----------
+function renderFiles() {
+  const box = $("#fileChips");
+  if (!state.files.length) { box.innerHTML = '<span class="hint-text">Nenhum arquivo escolhido ainda.</span>'; return; }
+  box.innerHTML = state.files.map((f, i) => `<span class="chip">📄 ${esc(f.name)} <button data-rm="${i}" title="Remover">×</button></span>`).join("");
+  $$("[data-rm]", box).forEach(b => b.addEventListener("click", () => { state.files.splice(+b.dataset.rm, 1); state.docs = null; state.sample = null; renderFiles(); }));
 }
-$$('.use-skill').forEach(card=>card.addEventListener('click',()=>useSkill(card)));
+async function loadSample(kind) {
+  state.files = [];
+  for (const n of SAMPLES[kind]) { const blob = await (await fetch("demo/" + n)).blob(); state.files.push(new File([blob], n, { type: "application/pdf" })); }
+  state.docs = null; state.sample = kind; renderFiles();
+}
+$("#pickFiles").addEventListener("click", () => $("#fileInput").click());
+$("#fileInput").addEventListener("change", e => { state.files = [...e.target.files]; state.docs = null; state.sample = null; renderFiles(); e.target.value = ""; });
+$$(".sample-btn").forEach(b => b.addEventListener("click", async () => { await loadSample(b.dataset.case); toast("Caso de exemplo carregado."); }));
+async function readDocs() {
+  if (state.docs) return state.docs;
+  state.docs = [];
+  for (const f of state.files) state.docs.push(await E.readFile(f));
+  return state.docs;
+}
+
+// ---------- tarefa ----------
+function detectTask(text) {
+  const t = text.toLowerCase();
+  if (/relat[oó]rio|cliente/.test(t)) return "relatorio";
+  if (/compar|alega/.test(t)) return "comparacao";
+  if (/organiz|[ií]ndice|classifi/.test(t)) return "organizacao";
+  if (/risco|prova/.test(t)) return "riscos";
+  if (/cronolog|linha do tempo|datas|prazos/.test(t)) return "cronologia";
+  return "outro";
+}
+function setTask(k) { state.task = k; $$(".task-card").forEach(c => c.classList.toggle("on", c.dataset.task === k)); }
+$$(".task-card").forEach(c => c.addEventListener("click", () => {
+  setTask(c.dataset.task);
+  if (c.dataset.task === "outro") { $("#requestText").value = ""; $("#requestText").placeholder = "Escreva o que precisa. Ex.: liste todos os pedidos da inicial e diga quais a defesa contestou."; $("#requestText").focus(); if (!aiAvailable) toast("Tarefas livres precisam de IA. Conecte em Configurações."); else $("#useAi").checked = true; }
+  else $("#requestText").value = c.dataset.prompt;
+}));
+$("#requestText").addEventListener("input", () => { const k = detectTask($("#requestText").value); if (k !== "outro" || $(".task-card.on")?.dataset.task !== "outro") setTask(k); });
+
+// ---------- IA ----------
+let aiAvailable = false;
+async function refreshAi() {
+  const st = await AI.status(); aiAvailable = st.available;
+  $("#useAi").disabled = !st.available; if (!st.available) $("#useAi").checked = false;
+  $("#aiLabel").textContent = st.available ? "Usar IA (texto anonimizado)" : "IA desligada";
+  $("#aiStatusLine").innerHTML = st.available ? `IA conectada: ${esc(st.label)}.` : `Sem IA conectada: a Acta funciona no modo local, sem enviar nada. <a href="#" id="goSettings">Conectar IA</a>`;
+  const g = $("#goSettings"); if (g) g.addEventListener("click", e => { e.preventDefault(); showView("settings"); });
+  return st;
+}
+async function renderAiPanel() {
+  const st = await refreshAi(), s = AI.settings();
+  $("#aiPanelStatus").innerHTML = `<b>${st.available ? "● Conectada" : "○ Não conectada"}</b> · ${esc(st.label)}`;
+  $("#aiProvider").value = s.provider || "anthropic"; $("#aiModel").value = s.model || ""; $("#aiKey").value = s.key ? "••••••••" : "";
+  $("#officePrompt").value = store.get("acta.officePrompt", "");
+}
+$("#aiSave").addEventListener("click", async () => {
+  const s = AI.settings(), key = $("#aiKey").value.trim();
+  const next = { provider: $("#aiProvider").value, model: $("#aiModel").value.trim(), key: key && !key.startsWith("•") ? key : s.key };
+  if (!next.key) return toast("Cole a chave de API.");
+  AI.saveSettings(next); await renderAiPanel(); toast("IA conectada. Ela só é usada quando você marcar a permissão.");
+});
+$("#aiRemove").addEventListener("click", async () => { AI.saveSettings({}); await renderAiPanel(); toast("Chave removida deste navegador."); });
+$("#officePrompt").addEventListener("change", () => store.set("acta.officePrompt", $("#officePrompt").value));
+
+// ---------- pedido → perguntas → plano ----------
+const context = () => `Objetivo: ${$("#ctxGoal").value}. Atenção a: ${$("#ctxFocus").value}. Público: ${$("#ctxAudience").value}.`;
+$("#requestForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!state.files.length) return toast("Escolha os arquivos ou use um caso de exemplo.");
+  const text = $("#requestText").value.trim();
+  if (!text) return toast("Escolha uma tarefa ou escreva o pedido.");
+  if (state.task === "outro" && !(aiAvailable && $("#useAi").checked)) return toast("Tarefas livres precisam de IA: conecte em Configurações e marque Usar IA.");
+  if (state.skill) return runSkill();
+  $("#userRequestPreview").textContent = text;
+  $("#taskNote").classList.add("is-hidden");
+  showStage("clarifyStage");
+});
+$("#requestText").addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") $("#requestForm").requestSubmit(); });
+
+$("#contextForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("#contextForm button"); btn.disabled = true; btn.textContent = "Montando o plano...";
+  try { await buildPlan(); showStage("planStage"); }
+  catch (err) { toast(err.message); }
+  finally { btn.disabled = false; btn.textContent = "Gerar plano →"; }
+});
+async function buildPlan() {
+  const docs = await readDocs(), info = TASK_INFO[state.task], useAi = aiAvailable && $("#useAi").checked;
+  let plan, warning = "";
+  if (useAi) {
+    try { plan = await AI.plan($("#requestText").value, info.name, docs.map(d => d.name), context(), store.get("acta.officePrompt", "")); }
+    catch (err) { warning = `${err.message} O plano abaixo é o do modo local.`; }
+  }
+  if (!plan) {
+    if (state.task === "outro") throw new Error(warning || "Tarefa livre precisa de IA.");
+    plan = { title: info.name, objective: $("#requestText").value, mode: "local", questions: [],
+      steps: ["Ler só os arquivos autorizados", "Tirar cabeçalhos repetidos e juntar as frases que o PDF quebrou", "Identificar o tipo de cada peça", ...LOCAL_PLAN[state.task], "Ligar cada informação ao documento e à página", "Listar o que você ainda precisa conferir"],
+      tests: ["Toda informação indica documento e página", "Datas incertas e prazos sem termo inicial aparecem como alerta", "Nenhum arquivo original é alterado"] };
+  }
+  state.plan = plan;
+  renderPlan(plan, warning, useAi);
+}
+function renderPlan(plan, warning, useAi) {
+  const docs = state.docs || [];
+  $("#planMode").textContent = plan.mode === "ia" ? "PLANO PROPOSTO PELA IA" : "PLANO DO MODO LOCAL (SEM IA)";
+  $("#planTitle").textContent = plan.title; $("#planObjective").textContent = plan.objective;
+  $("#planList").innerHTML = plan.steps.map((s, i) => `<li><span>${i + 1}</span><div><b>${esc(s)}</b></div></li>`).join("");
+  $("#planTests").innerHTML = plan.tests.map(t => `<li>${esc(t)}</li>`).join("");
+  const q = plan.questions || [];
+  $("#planQuestions").classList.toggle("is-hidden", !q.length);
+  $("#planQuestions").innerHTML = q.length ? `<b>A IA quer confirmar antes:</b><ul>${q.map(x => `<li>${esc(x)}</li>`).join("")}</ul><small>Responda ajustando o pedido (Editar pedido) ou aprove assim mesmo.</small>` : "";
+  $("#planWarning").textContent = warning; $("#planWarning").classList.toggle("is-hidden", !warning);
+  $("#permFiles").textContent = docs.map(d => d.name).join(", ") || "0 arquivos";
+  $("#outFile").textContent = TASK_INFO[state.task].file;
+  $("#allowExternal").disabled = !aiAvailable; $("#allowExternal").checked = !!(useAi && plan.mode === "ia");
+  $("#extHint").textContent = aiAvailable ? "Nomes, CPF, CNPJ e nº do processo viram códigos" : "Sem IA conectada";
+  renderAnon();
+}
+function renderAnon() {
+  const card = $("#anonCard");
+  if (!$("#allowExternal").checked || !state.docs) { card.classList.add("is-hidden"); return; }
+  const { anon, body } = AI.prepareSend(state.docs);
+  const total = anon.found.reduce((n, f) => n + f.occurrences, 0);
+  $("#anonSummary").textContent = `${anon.found.length} dado(s) identificável(is), em ${total} ocorrência(s), viram códigos. A tabela abaixo fica só aqui.`;
+  $("#anonTable").innerHTML = anon.found.map(f => `<tr><td>${esc(f.value)}</td><td><code>${esc(f.code)}</code></td></tr>`).join("") || "<tr><td>Nenhum dado identificável encontrado.</td></tr>";
+  $("#anonPreview").textContent = body.slice(0, 2500);
+  card.classList.remove("is-hidden");
+}
+$("#allowExternal").addEventListener("change", renderAnon);
+
+// ---------- execução ----------
+$("#approvePlan").addEventListener("click", () => {
+  if (!$("#allowRead").checked) return toast("Autorize a leitura dos arquivos para continuar.");
+  execute({ fromSkill: null });
+});
+function progress(p, text) { $("#progressBar").style.width = p + "%"; $("#progressValue").textContent = p + "%"; if (text) $("#buildStatus").textContent = text; }
+async function execute({ fromSkill }) {
+  showStage("buildStage");
+  const info = TASK_INFO[state.task], useAi = aiAvailable && $("#allowExternal").checked;
+  $("#buildTitle").textContent = fromSkill ? `Skill "${fromSkill.name}"` : info.name;
+  try {
+    progress(10, "Lendo os arquivos...");
+    const docs = await readDocs();
+    progress(35, "Limpando o texto e identificando as peças...");
+    await new Promise(r => setTimeout(r, 250));
+    let out;
+    if (useAi) {
+      progress(55, "Trocando nomes e documentos por códigos e enviando à IA...");
+      try { out = await AI.run(docs, $("#requestText").value, state.plan, context(), store.get("acta.officePrompt", "")); out.task = state.task; out.sources = docs.map(d => d.name); }
+      catch (err) { if (state.task === "outro") throw err; toast(`${err.message} Usando o modo local.`); }
+      progress(85, "Conferindo cada trecho citado no documento original...");
+    }
+    if (!out) { progress(70, "Montando o resultado..."); out = E.analyze(docs, state.task); }
+    progress(100, "Pronto.");
+    state.result = out;
+    logHistory(out, fromSkill, useAi);
+    await new Promise(r => setTimeout(r, 300));
+    renderResult(out, fromSkill);
+    showStage("resultStage");
+  } catch (err) {
+    toast(err.message); showStage(fromSkill ? "startStage" : "planStage");
+  }
+}
+$("#rerun").addEventListener("click", () => execute({ fromSkill: state.skill }));
+
+// ---------- resultado ----------
+const src = (n, p) => `${esc(n)}${p ? `, p. ${p}` : ""}`;
+function renderBody(out) {
+  const r = out.result;
+  if (out.mode === "ia") {
+    const v = out.verification, cls = { "conferido": "ok", "outro arquivo": "warn", "não localizado": "bad", "sem trecho": "bad" };
+    return `${out.summary ? `<p class="r-summary">${esc(out.summary)}</p>` : ""}<div class="r-metrics"><div><span>Afirmações</span><b>${v.total}</b></div><div><span>Conferidas no arquivo citado</span><b>${v.confirmed}</b></div><div><span>Sem trecho localizado</span><b class="${v.not_found ? "bad-text" : ""}">${v.not_found}</b></div></div>
+      <table class="r-table"><thead><tr><th>Data</th><th>Informação</th><th>Fonte</th><th>Conferência</th></tr></thead><tbody>${out.items.map(i => `<tr><td class="nowrap">${esc(i.date || "—")}</td><td><b class="r-label">${esc(i.label || "")}</b> ${esc(i.text)}${i.quote ? `<q>${esc(i.quote)}</q>` : ""}</td><td class="r-src">${src(i.source, i.page)}</td><td><span class="r-badge ${cls[i.status] || "warn"}">${esc(i.status)}</span>${i.date_in_quote === false ? '<span class="r-badge bad">data fora do trecho</span>' : ""}</td></tr>`).join("") || '<tr><td colspan="4">A IA não devolveu itens.</td></tr>'}</tbody></table>
+      <details class="r-anon"><summary>O que saiu do computador (${out.anonymization.sent_characters} caracteres, ${out.anonymization.replaced.length} dados trocados por código)</summary><p>${out.anonymization.replaced.map(x => `<code>${esc(x.code)}</code> ×${x.occurrences}`).join(" · ") || "Nenhum dado identificável."}</p><pre>${esc(out.anonymization.sent_preview)}</pre></details>`;
+  }
+  if (out.task === "cronologia") return `<table class="r-table"><thead><tr><th>Data</th><th>Evento, como está no documento</th><th>Fonte</th></tr></thead><tbody>${r.events.map(e => `<tr><td class="nowrap"><b>${e.date}${e.end_date ? ` a ${e.end_date}` : ""}</b>${e.note ? '<br><span class="r-badge warn">ano inferido</span>' : ""}</td><td>${esc(e.event)}</td><td class="r-src">${src(e.source, e.page)}</td></tr>`).join("") || '<tr><td colspan="3">Nenhuma data encontrada.</td></tr>'}${r.deadlines.map(d => `<tr><td class="nowrap"><b>Prazo: ${esc(d.deadline)}</b></td><td>${esc(d.event)}</td><td class="r-src">${src(d.source, d.page)}</td></tr>`).join("")}</tbody></table>`;
+  if (out.task === "comparacao") { const col = xs => `<ul>${xs.map(x => `<li>${esc(x.text)} <small class="r-src">(p. ${x.page})</small></li>`).join("") || "<li>Nada encontrado.</li>"}</ul>`; return `<div class="r-two"><div><h3>${esc(r.columns[0])}</h3>${col(r.left)}</div><div><h3>${esc(r.columns[1])}</h3>${col(r.right)}</div></div>${r.controverted.length ? `<div class="r-block"><h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`; }
+  if (out.task === "organizacao") return `<div class="r-docs">${r.documents.map(d => `<article><span>${esc(d.type)}${d.process ? ` · ${esc(d.process)}` : ""}</span><h3>${esc(d.title || d.name)}</h3><p>${esc(d.summary)}</p><small class="r-src">${esc(d.name)} · ${d.pages} p.</small></article>`).join("")}</div>`;
+  if (out.task === "riscos") return `<div class="r-risks">${r.items.map(x => `<article><span class="r-badge ${x.level === "alto" ? "bad" : "warn"}">${esc(x.level.toUpperCase())}</span><h3>${esc(x.risk)}</h3><p>${esc(x.action)}</p></article>`).join("")}</div>`;
+  return `<div class="r-metrics"><div><span>Documentos lidos</span><b>${r.documents.length}</b></div><div><span>Valores encontrados</span><b>${esc(r.amounts.join(" · ") || "Nenhum")}</b></div><div><span>Evento mais recente</span><b>${r.last_event ? esc(r.last_event.date) : "—"}</b></div></div>
+    <div class="r-block"><h3>Resumo</h3><p>${esc(r.summary)}</p><h3>Situação atual</h3><p>${esc(r.status)}${r.status_source ? ` <small class="r-src">(${esc(r.status_source)})</small>` : ""}</p>${r.controverted.length ? `<h3>Pontos controvertidos fixados pelo juízo</h3><ul>${r.controverted.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<h3>Antes de enviar ao cliente</h3><ul><li>Validar valores, datas e prazos nos originais.</li><li>Revisar as conclusões jurídicas: a Acta não substitui o advogado.</li></ul></div>`;
+}
+function renderPending(box, list) { box.classList.toggle("is-hidden", !list.length); $("ul", box).innerHTML = list.map(x => `<li>${esc(x)}</li>`).join(""); }
+function renderResult(out, fromSkill) {
+  const info = TASK_INFO[out.task];
+  $("#toolIcon").textContent = info.icon; $("#toolTitle").textContent = out.mode === "ia" ? (out.title || info.name) : info.name;
+  $("#toolMeta").textContent = `${out.sources.length} documento(s) · ${out.mode === "ia" ? "feito com IA, trechos conferidos" : "modo local, nada enviado para fora"}`;
+  $("#resultBody").innerHTML = renderBody(out);
+  renderPending($("#resultPending"), out.pending || []);
+  $("#resultChecks").innerHTML = ["Arquivos lidos: " + out.sources.length, out.mode === "ia" ? `Trechos conferidos: ${out.verification.confirmed} de ${out.verification.total}` : "Fonte com página em cada linha", "Originais alterados: nenhum", out.mode === "ia" ? "Enviado à IA só texto anonimizado" : "Nada enviado para fora"].map(x => `<span>✓ ${esc(x)}</span>`).join("");
+  $("#saveCard").classList.toggle("is-hidden", !!fromSkill);
+  $("#resEyebrow").textContent = fromSkill ? "Skill executada" : "Resultado";
+  $("#resTitle").textContent = fromSkill ? "Pronto, sem refazer nada." : "Confira na fonte.";
+  $("#resSub").textContent = fromSkill ? "Mesmo pedido, mesmo plano, arquivos novos." : "Cada linha mostra de onde veio. Se estiver bom, salve como skill.";
+  $("#resPill").textContent = out.mode === "ia" ? "Feito com IA" : "Modo local";
+  const note = $("#resultNote");
+  note.textContent = fromSkill ? `Resultado da skill "${fromSkill.name}", com o plano aprovado quando ela foi salva. Arquivos: ${out.sources.join(", ")}.` : "";
+  note.classList.toggle("is-hidden", !fromSkill);
+  $("#skillName").value = state.task === "outro" ? ($("#requestText").value.slice(0, 50)) : info.name;
+  $("#skillDesc").value = state.task === "outro" ? $("#requestText").value : info.desc;
+}
+
+// ---------- download ----------
+function resultMarkdown() {
+  const out = state.result; if (!out) return "";
+  const lines = [`# ${$("#toolTitle").textContent}`, "", `Pedido: ${$("#requestText").value}`, `Arquivos: ${out.sources.join(", ")}`, `Modo: ${out.mode === "ia" ? "IA, texto anonimizado, trechos conferidos" : "local, sem envio de dados"}`, ""];
+  const tmp = document.createElement("div"); tmp.innerHTML = renderBody(out);
+  $$("table", tmp).forEach(t => { const rows = $$("tr", t).map(tr => "| " + $$("th,td", tr).map(c => c.innerText.replace(/\s+/g, " ").replace(/\|/g, "/")).join(" | ") + " |"); if (rows.length) rows.splice(1, 0, "|" + " --- |".repeat($$("th", t).length || 1)); lines.push(...rows, ""); t.remove(); });
+  const rest = tmp.innerText.trim(); if (rest) lines.push(rest, "");
+  if ((out.pending || []).length) lines.push("## O que conferir", ...out.pending.map(x => `- [ ] ${x}`), "");
+  lines.push("> Gerado pela Acta para conferência humana. Não substitui o advogado.");
+  return lines.join("\n");
+}
+$("#download").addEventListener("click", () => {
+  const out = state.result; if (!out) return;
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([resultMarkdown()], { type: "text/markdown" })); a.download = TASK_INFO[out.task].file; a.click(); URL.revokeObjectURL(a.href);
+});
+
+$("#copyMd").addEventListener("click", async () => { try { await navigator.clipboard.writeText(resultMarkdown()); toast("Resultado copiado. Cole no Word ou no e-mail."); } catch (e) { toast("O navegador bloqueou a cópia."); } });
+
+// ---------- skills ----------
+const skills = () => store.get("acta.skills", []);
+$("#saveSkill").addEventListener("click", () => {
+  const name = $("#skillName").value.trim(); if (!name) return toast("Dê um nome à skill.");
+  const list = skills().filter(s => s.name !== name);
+  list.unshift({ id: Date.now(), name, desc: $("#skillDesc").value, task: state.task, prompt: $("#requestText").value, plan: state.plan, context: context(), useAi: $("#allowExternal").checked, created: new Date().toLocaleString("pt-BR") });
+  store.set("acta.skills", list); toast(`Skill "${name}" salva.`); showView("skills");
+});
+function renderSkills() {
+  const mine = skills(), grid = $("#skillGrid");
+  const models = Object.entries(TASK_INFO).filter(([k]) => k !== "outro" && !mine.some(s => s.task === k && s.name === TASK_INFO[k].name));
+  grid.innerHTML = mine.map(s => `<article class="skill-card use-skill featured" data-id="${s.id}"><span class="skill-icon">${esc(TASK_INFO[s.task].icon)}</span><div><b>${esc(s.name)}</b><p>${esc(s.desc || TASK_INFO[s.task].desc)}</p><small class="r-src">Salva em ${esc(s.created)}${s.useAi ? " · com IA" : ""}</small></div><span class="status-pill green">Usar →</span><button class="skill-del" data-del="${s.id}" title="Apagar">×</button></article>`).join("")
+    + models.map(([k, t]) => `<article class="skill-card use-model" data-task="${k}"><span class="skill-icon">${t.icon}</span><div><b>${t.name}</b><p>${t.desc}</p></div><span class="status-pill neutral">Modelo · Usar →</span></article>`).join("");
+  $$(".use-skill", grid).forEach(c => c.addEventListener("click", e => { if (e.target.dataset.del) return; startSkill(mine.find(s => String(s.id) === c.dataset.id)); }));
+  $$("[data-del]", grid).forEach(b => b.addEventListener("click", () => { store.set("acta.skills", skills().filter(s => String(s.id) !== b.dataset.del)); renderSkills(); toast("Skill apagada."); }));
+  $$(".use-model", grid).forEach(c => c.addEventListener("click", () => { clearSkill(); showView("builder"); showStage("startStage"); const card = $(`.task-card[data-task="${c.dataset.task}"]`); card.click(); toast("Escolha os arquivos e clique em Ver o plano."); }));
+}
+function startSkill(s) {
+  state.skill = s; showView("builder"); showStage("startStage");
+  setTask(s.task); $("#requestText").value = s.prompt; state.plan = s.plan;
+  $("#skillBanner").innerHTML = `Usando a skill <b>${esc(s.name)}</b>: o pedido e o plano já estão prontos. Escolha os arquivos deste processo e clique em <b>Rodar skill</b>. <a href="#" id="cancelSkill">Cancelar</a>`;
+  $("#skillBanner").classList.remove("is-hidden"); $("#goButton").textContent = "Rodar skill →";
+  $("#cancelSkill").addEventListener("click", e => { e.preventDefault(); clearSkill(); });
+  if (s.useAi && aiAvailable) $("#useAi").checked = true;
+}
+function clearSkill() { state.skill = null; $("#skillBanner").classList.add("is-hidden"); $("#goButton").textContent = "Ver o plano →"; }
+async function runSkill() {
+  const s = state.skill;
+  await readDocs();
+  $("#allowExternal").checked = !!(s.useAi && aiAvailable && $("#useAi").checked);
+  state.plan = s.plan; await execute({ fromSkill: s });
+}
+
+// ---------- histórico ----------
+function logHistory(out, fromSkill, useAi) {
+  const h = store.get("acta.history", []);
+  h.unshift({ when: new Date().toLocaleString("pt-BR"), task: TASK_INFO[out.task].name, skill: fromSkill ? fromSkill.name : null, files: out.sources, mode: useAi && out.mode === "ia" ? "IA (texto anonimizado)" : "local", sent: out.mode === "ia" ? `${out.anonymization.sent_characters} caracteres anonimizados` : "nada" });
+  store.set("acta.history", h.slice(0, 50));
+}
+function renderHistory() {
+  const h = store.get("acta.history", []);
+  $("#historyList").innerHTML = h.length ? h.map(x => `<div><time>${esc(x.when)}</time><b>${esc(x.skill ? `Skill "${x.skill}"` : x.task)}</b><span>${esc(x.files.join(", "))} · modo ${esc(x.mode)} · enviado para fora: ${esc(x.sent)} · originais não alterados</span></div>`).join("") : '<div><b>Nenhuma execução ainda.</b><span>Rode uma tarefa em Construir e ela aparece aqui.</span></div>';
+}
+$("#clearHistory").addEventListener("click", () => { store.set("acta.history", []); renderHistory(); });
+
+// ---------- caso demonstrativo (calculado de verdade) ----------
+let caseDocs = null;
+async function runCaseDemo(task) {
+  task = task || $(".demo-action.is-active").dataset.task;
+  $$(".demo-action").forEach(b => b.classList.toggle("is-active", b.dataset.task === task));
+  $("#demoOutputTitle").textContent = TASK_INFO[task].name; $("#demoReady").textContent = "Lendo...";
+  try {
+    if (!caseDocs) { caseDocs = []; for (const n of SAMPLES.civel) { const blob = await (await fetch("demo/" + n)).blob(); caseDocs.push(await E.readFile(new File([blob], n))); } }
+    const out = E.analyze(caseDocs, task);
+    $("#demoResultBody").innerHTML = renderBody(out); renderPending($("#demoPending"), out.pending);
+    $("#demoReady").textContent = "Pronto";
+  } catch (err) { $("#demoResultBody").innerHTML = `<p class="hint-text">${esc(err.message)}</p>`; }
+}
+$$(".demo-action").forEach(b => b.addEventListener("click", () => runCaseDemo(b.dataset.task)));
+$("#caseToBuilder").addEventListener("click", async () => { clearSkill(); showView("builder"); showStage("startStage"); await loadSample("civel"); toast("Caso carregado em Construir. Escolha a tarefa e clique em Ver o plano."); });
+
+// ---------- início ----------
+refreshAi();

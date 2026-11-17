@@ -57,6 +57,8 @@ O segundo foi mais sério. O ChatGPT tinha preenchido a demonstração com infor
 
 Trocamos tudo pelos resultados que a Acta realmente produz para os três PDFs e refizemos o PDF do relatório ao cliente. É a mesma lição da cronologia, só que no site: uma IA que escreve bem também inventa com naturalidade, e o único jeito de pegar isso é conferir na fonte. O site novo está em https://marialuizajuca.github.io/acta/.
 
+Ainda faltava uma coisa: o site mostrava resultados prontos. Clicar numa skill não processava nada. Pedimos ao Claude para transformar a demonstração em produto. Ele reescreveu o motor da Acta em JavaScript para rodar no navegador (o GitHub Pages não roda Python) e conferiu o resultado contra o mesmo gabarito: 5/5 no caso cível e 7/7 no trabalhista. Depois ligou a IA de verdade: dentro do Claude, o site usa o próprio Claude; fora dele, aceita uma chave de API. Testamos o modo IA com uma resposta simulada que tinha uma citação inventada, e o site marcou essa linha como "não localizado", como deveria. As skills agora ficam salvas no navegador e rodam de novo em arquivos novos.
+
 ## O teste contra o ChatGPT
 
 Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o mesmo pedido. A gente esperava que ele errasse datas. Não errou. Achou todos os eventos nos dois casos, indicou página, copiou os trechos certos, viu que as partes discordam sobre a data do pagamento (24/08 ou 28/08) e ainda calculou o vencimento dos prazos. No caso trabalhista, respondeu certo de primeira. Em acerto, empatou com a Acta. Na riqueza da resposta, foi melhor.

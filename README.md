@@ -2,7 +2,8 @@
 
 A Acta é para o advogado de contencioso que acabou de receber um processo. Ela transforma as peças em algo que ele consegue usar e conferir: uma cronologia, um relatório para o cliente, uma comparação entre as alegações das partes. Ele escreve o que precisa em português, vê o plano antes de qualquer coisa acontecer e recebe cada informação com o documento e a página de onde ela saiu. No fim, a Acta lista o que ainda precisa ser conferido. A tarefa pode ser salva como skill e usada de novo no próximo caso.
 
-- **Site:** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
+- **Site (funciona de verdade):** [marialuizajuca.github.io/acta](https://marialuizajuca.github.io/acta/)
+- **Mesmo site com IA do Claude, sem chave:** [claude.ai/artifact/Sqad48sNr27gpyXKH8EfaA](https://claude.ai/artifact/Sqad48sNr27gpyXKH8EfaA) (pede login no Claude)
 - Projeto acadêmico do grupo Actio para a APS de Ciência de Dados Aplicada ao Direito I (Insper, 2026/2). Todos os documentos da pasta `samples/` são fictícios.
 
 ## Um exemplo
@@ -37,6 +38,15 @@ No caso trabalhista de exemplo, a Acta mostra que a reclamante diz ter recebido 
 **Por que não o ChatGPT, o Claude ou o Harvey?** Testamos o ChatGPT e ele acertou tanto quanto a Acta (veja "Quanto ela acerta"). A diferença está nos dados, que não saem do escritório ou saem com códigos, e na conferência automática das citações. Não testamos o Harvey.
 
 **Por que só contencioso?** A banca sugeriu delimitar o escopo. Começamos pela rotina de entender um processo novo e explicar ao cliente onde ele está.
+
+## O site
+
+O site não é uma maquete. Ele lê os PDFs, DOCX ou TXT que você escolher (ou os casos de exemplo) e processa tudo no próprio navegador, com uma versão em JavaScript do mesmo motor da Acta (`docs/acta-engine.js`). Nada sai do computador no modo padrão.
+
+- **Construir:** escolha os arquivos, a tarefa (cronologia, relatório, comparação, organização, riscos ou uma tarefa livre), responda três perguntas, revise o plano, aprove e veja o resultado com documento e página em cada linha. Baixe ou copie em Markdown.
+- **IA de verdade (`docs/acta-ai.js`):** aberto dentro do Claude, o site usa o próprio Claude, sem chave. No GitHub Pages, cole uma chave da Anthropic ou da OpenAI em Configurações; ela fica só no navegador. Antes de enviar, o site mostra a tabela de anonimização e o texto exato que vai sair. Na volta, cada trecho citado pela IA é procurado no documento: o que não for achado aparece como "não localizado".
+- **Skills:** salve o resultado como skill. Na próxima vez, clique nela, escolha os arquivos do novo processo e ela roda com o plano já aprovado.
+- **Histórico:** registra cada execução feita naquele navegador e o que foi enviado para fora.
 
 ## Como funciona
 
