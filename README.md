@@ -182,7 +182,7 @@ acta/
 
 ## Limitações conhecidas
 
-- O modo IA ainda não foi testado com uma chave de verdade, só com respostas simuladas nos testes automáticos.
+- O modo IA foi testado de verdade uma vez, dentro do Claude, no caso de exemplo cível (comparação das alegações): 19 de 19 trechos citados pela IA foram encontrados nos documentos. Com chave da Anthropic ou da OpenAI, foi testado só com respostas simuladas.
 - PDFs digitalizados como imagem precisam de OCR, que ainda não existe.
 - O modo local usa regras: uma data escrita de forma incomum (por exemplo, "no quinto dia útil do mês seguinte") não é encontrada.
 - A anonimização reconhece padrões (CPF, CNPJ, e-mail, telefone, empresas com Ltda./S.A., nomes depois de "Autor:", "Ré:", "Sr." etc.). Um nome solto no texto, sem nenhum desses sinais, pode escapar. Por isso o advogado vê a lista do que será trocado e o texto exato que será enviado, antes de aprovar.

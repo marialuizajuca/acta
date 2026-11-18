@@ -61,6 +61,8 @@ Ainda faltava uma coisa: o site mostrava resultados prontos. Clicar numa skill n
 
 Depois testamos o site como um usuário faria, com processos de teste de vários tipos: uma cópia integral do PJe com 14 peças, um processo trabalhista, um caso de juizado em PDFs separados, a mesma coisa misturando PDF, Word e TXT, um processo de 211 páginas e dois processos enviados juntos por engano. Esses testes acharam erros que os dois casos de exemplo não mostravam: uma notificação lida como contestação, um prazo de recurso escrito de outro jeito que passava despercebido, o texto de um e-mail digitalizado cheio de erros aparecendo no resultado e nenhum aviso quando os arquivos eram de processos diferentes. Corrigimos cada um e rodamos de novo o gabarito, que continuou em 12 de 12.
 
+Por último testamos a IA de verdade, na versão do site aberta dentro do Claude, com o caso cível de exemplo. A comparação veio organizada por tema, em português simples, e os 19 trechos que a IA citou foram encontrados nos documentos pela conferência automática. O teste mostrou um problema: a IA recebia os nomes reais dos arquivos no plano e nomes trocados na execução, e comentou essa diferença no resultado. Passamos a esconder os nomes reais também no plano, porque o nome de um arquivo pode conter o número do processo.
+
 ## O teste contra o ChatGPT
 
 Fizemos a mesma tarefa no ChatGPT comum, com os mesmos PDFs e o mesmo pedido. A gente esperava que ele errasse datas. Não errou. Achou todos os eventos nos dois casos, indicou página, copiou os trechos certos, viu que as partes discordam sobre a data do pagamento (24/08 ou 28/08) e ainda calculou o vencimento dos prazos. No caso trabalhista, respondeu certo de primeira. Em acerto, empatou com a Acta. Na riqueza da resposta, foi melhor.
