@@ -123,7 +123,7 @@ Se for cronologia, ordene por data. Se for comparação, organize por tema: para
     let chosen = pieces;
     if (pieces.reduce((n, p) => n + p.text.length, 0) > LIMIT) {
       const pri = PRIORITY[task] || ["Petição inicial", "Defesa", "Decisão", "Sentença", "Réplica", "Recurso"];
-      const rank = p => { const i = pri.indexOf(p.type); return i < 0 ? 99 : i; };
+      const rank = p => { if (p.cover) return -1; const i = pri.indexOf(p.type); return i < 0 ? 99 : i; };
       const sorted = pieces.map((p, i) => ({ p, i })).sort((a, b) => rank(a.p) - rank(b.p) || (["Decisão", "Sentença", "Despacho", "Intimação"].includes(a.p.type) ? b.i - a.i : a.i - b.i));
       let total = 0; const pick = new Set();
       for (const { p, i } of sorted) { const len = Math.min(p.text.length, PER); if (rank(p) === 99 || total + len > LIMIT) continue; pick.add(i); total += len; }

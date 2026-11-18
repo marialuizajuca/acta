@@ -75,7 +75,7 @@
   const isHeading = l => l.length <= 60 && !endsPunct(l) && l.split(/\s+/).length <= 6;
   const PJE_NUM = /Num\.\s*(\d{5,})\s*-\s*P[áa]g\.\s*(\d+)/;
   const PJE_SIGN = /Assinado eletronicamente por:\s*(.+?)\s*-\s*(\d{2}\/\d{2}\/\d{4})/;
-  const PJE_NOISE = /Num\.\s*\d{5,}\s*-\s*P[áa]g\.|Assinado eletronicamente|consultaPublica|ConsultaDocumento|validar este documento|Número do documento:|documento foi gerado pelo usu[áa]rio|^https?:\/\//i;
+  const PJE_NOISE = /via Token|^por [A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ ]{5,},?$|Para verificar a(?: (?:assinatura|autenticidade))?|^assinatura acesse|^Chave$|^[0-9a-f]{8}(?:\.[0-9a-f]{8}){2,}|^Chave [0-9a-f]{6,}|^Documento assinado|^digitalmente$|transparencia\.mpf|validacaodocumento|^\d{8,}$|Num\.\s*\d{5,}\s*-\s*P[áa]g\.|Assinado eletronicamente|consultaPublica|ConsultaDocumento|validar este documento|Número do documento:|documento foi gerado pelo usu[áa]rio|^https?:\/\//i;
   function isNoise(l, bp) {
     if (bp.has(l) || PAGE_WORD_RE.test(l) || PJE_NOISE.test(l)) return true;
     if (l.includes("·") && !endsPunct(l)) return true;
@@ -123,9 +123,14 @@
     for (const a of ABBR) s = s.split(a).join(a.replace(/\./g, PROTECT));
     return s.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9“"(])/).map(x => x.split(PROTECT).join(".").trim()).filter(Boolean);
   }
+  // Pedaços de assinatura digital que o PDF mistura no meio do texto.
+  const SIGFRAG = /(?:Documento assinado\s+)?via\s+Token(?:\s+digitalmente)?\s+por\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ ]+,?\s*(?:em\s+)?\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2})?\.?|(?:Documento assinado\s+)?digitalmente\s+por\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ ]+,?\s*(?:em\s+)?\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2})?\.?/g;
   function sentences(text, bp) {
     const out = [];
-    for (const p of paragraphs(text, bp)) for (const s of splitSentences(p.text)) if (s.length >= 20) out.push({ text: s, page: p.page, section: p.section });
+    for (const p of paragraphs(text, bp)) for (let s of splitSentences(p.text)) {
+      s = s.replace(SIGFRAG, " ").replace(/\s+/g, " ").trim();
+      if (s.length >= 20) out.push({ text: s, page: p.page, section: p.section });
+    }
     return out;
   }
   function title(text, bp) {
@@ -142,7 +147,7 @@
   // ---------- análise ----------
   const MONTHS = { janeiro: 1, fevereiro: 2, marco: 3, abril: 4, maio: 5, junho: 6, julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12 };
   const MONTH_NAMES = "janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro";
-  const DATE_NUM = () => /\b([0-3]?\d)[\/-]([01]?\d)[\/-]((?:19|20)\d{2})\b/g;
+  const DATE_NUM = () => /\b([0-3]?\d)([\/.-])([01]?\d)\2((?:19|20)\d{2})\b/g;
   const DATE_TEXT = () => /\b([0-3]?\d)º?\s+de\s+([a-zç]+)\s+de\s+((?:19|20)\d{2})\b/gi;
   const DATE_RANGE = () => /\b(?:entre|de)\s+([0-3]?\d)\s+(?:e|a)\s+([0-3]?\d)\s+de\s+([a-zç]+)(?:\s+de\s+((?:19|20)\d{2}))?/gi;
   const DATE_NOYEAR = () => new RegExp(`\\b([0-3]?\\d)º?\\s+de\\s+(${MONTH_NAMES})\\b(?!\\s+de\\s+(?:19|20)\\d{2})`, "gi");
@@ -157,8 +162,10 @@
   const DEFENSE_WORDS = ["reconhece", "sustenta", "invoca", "afirma", "contesta", "alega", "improcedencia", "reducao", "nega", "impugna"];
   const ORDER_WORDS = ["designo", "fixo", "determino", "defiro", "indefiro", "deverao", "julgo", "condeno", "intimem"];
   const COURT = ["Decisão", "Despacho", "Sentença", "Acórdão", "Ata de audiência", "Intimação", "Ato ordinatório", "Certidão", "Mandado"];
-  const BOILER = /^(?:autora?|r[ée]u?|reclamante|reclamad[ao]|requerente|requerid[ao]|processo)\s*(?:n[º°o.]*)?\s*:|j[áa] qualificad|inscrit[oa] no (?:cpf|cnpj)|vem,? (?:respeitosamente,? )?(?:a presença|perante|por (?:seu|sua|meio)|tempestivamente|propor|apresentar|interpor)|nestes termos|pede deferimento|termos em que|^excelent[íi]ssim|^vistos/i;
-  const DATELINE = /^[A-ZÀ-Ú][\wÀ-ú' -]{2,40},\s*\d{1,2}º?\s+de\s+[a-zç]+\s+de\s+\d{4}\.?$/i;
+  const BOILER = /^(?:O\(?A?\)?\s+)?(?:MM\.?\s*)?Ju[íi]z\(?[íi]?z?a?\)?\s+Federal,|Segue,? (?:em anexo,? )?(?:a )?peti[çc][ãa]o|demais usu[áa]rios|ficar[áa]\(?[ãa]?o?\)? dispon[íi]ve|ID da Reuni[ãa]o|Senha:|^(?:autora?|r[ée]u?|reclamante|reclamad[ao]|requerente|requerid[ao]|processo)\s*(?:n[º°o.]*)?\s*:|j[áa] qualificad|inscrit[oa] no (?:cpf|cnpj)|vem,? (?:respeitosamente,? )?(?:a presença|perante|por (?:seu|sua|meio)|tempestivamente|propor|apresentar|interpor)|nestes termos|pede deferimento|termos em que|^excelent[íi]ssim|^vistos/i;
+  const SIGNLINE = /digitalmente por|assinad[oa] (?:eletronicamente|digitalmente)|verificar a autenticidade|login e? ?senha|n[úu]mero do documento|chave de acesso/i;
+  const DATELINE = /^[A-ZÀ-Ú][\wÀ-ú'\/ -]{2,40},\s*\d{1,2}º?\s+de\s+[a-zç]+\s+de\s+\d{4}/i;
+  const CITATION = /\bDJ[Ee]?\b|\bRel\.|\bREsp\b|\bAgRg\b|\bAgInt\b|\bRE\s+\d|Turma|Ministr[oa] |Desembargador|Acesso em|in https?:|dispon[íi]vel em|Jurisprud[êe]ncia em teses|Informativo n/;
   const sentenceCase = t => t && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t;
   const pad = n => String(n).padStart(2, "0");
   const fmt = (d, m, y) => `${pad(d)}/${pad(m)}/${y}`;
@@ -171,6 +178,29 @@
       for (const [k, label] of DOC_TYPES) if (c.includes(k)) return label;
     return "Documento geral";
   }
+  // Capa da cópia integral do PJe: dados do processo e o índice oficial das peças
+  // (Id, data, nome do documento e tipo). Quando existe, ele manda nos tipos e nomes.
+  const PJE_TYPES = ["Certidão de Intimação (Outros)", "Manifestação do Ministério Público", "Embargos de Declaração", "Agravo de Instrumento", "Documento Comprobatório", "Documento de Identificação", "Petição intercorrente", "Petição (outras)", "Petição inicial", "Emenda à inicial", "Ata de Audiência", "Termo de Audiência", "Ato Ordinatório", "Laudo Pericial", "Recurso Inominado", "Contrarrazões", "Substabelecimento", "Contestação", "Impugnação", "Procuração", "Outras peças", "Diligência", "Comunicação", "Informação", "Sentença", "Acórdão", "Apelação", "Decisão", "Despacho", "Certidão", "Mandado", "Intimação", "Citação", "Ciência", "Réplica", "Parecer", "Ofício", "Recurso", "Laudo", "Edital", "Alvará", "Petição"];
+  const PJE_MAP = { "petição inicial": "Petição inicial", "emenda à inicial": "Petição inicial", "contestação": "Defesa", "réplica": "Réplica", "impugnação": "Réplica", "sentença": "Sentença", "acórdão": "Acórdão", "decisão": "Decisão", "despacho": "Despacho", "ato ordinatório": "Ato ordinatório", "ata de audiência": "Ata de audiência", "termo de audiência": "Ata de audiência", "certidão": "Certidão", "certidão de intimação (outros)": "Certidão", "diligência": "Certidão", "mandado": "Mandado", "intimação": "Intimação", "citação": "Intimação", "comunicação": "Intimação", "apelação": "Recurso", "recurso": "Recurso", "recurso inominado": "Recurso", "embargos de declaração": "Recurso", "agravo de instrumento": "Recurso", "contrarrazões": "Petição", "procuração": "Procuração", "substabelecimento": "Procuração", "documento comprobatório": "Documento", "documento de identificação": "Documento", "laudo": "Documento", "laudo pericial": "Documento", "ofício": "Documento", "edital": "Documento", "alvará": "Documento", "outras peças": "Documento" };
+  function pjeCover(text) {
+    if (!/\bId\.\s+Data\s+Documento\s+Tipo\b/.test(text)) return null;
+    const head = text.split(/\bDocumentos\s*\n\s*Id\./)[0], g = re => { const m = head.match(re); return m ? squash(m[1]) : null; };
+    const meta = { number: g(/Número:\s*([\d.-]+)/), cls: g(/Classe:\s*(.+)/), court: g(/Órgão julgador:\s*(.+)/), value: g(/Valor da causa:\s*(R\$\s*[\d.,]+)/), subject: g(/Assuntos:\s*(.+)/),
+      parties: [...head.matchAll(/^(.+?)\s*\((AUTORA?|R[ÉE]U?|R[ÉE]|REQUERENTE|REQUERID[OA]|EXEQUENTE|EXECUTAD[OA]|IMPETRANTE|IMPETRAD[OA]|RECLAMANTE|RECLAMAD[OA]|APELANTE|APELAD[OA])\)\s*$/gm)].map(m => ({ name: squash(m[1]), role: m[2] })) };
+    const index = {}, lines = text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^(\d{6,})\s+(\d{2}\/\d{2}\/\d{4})$/); if (!m) continue;
+      let j = i + 1; if (/^\d{2}:\d{2}$/.test(lines[j] || "")) j++;
+      let desc = "";
+      while (j < lines.length && !/^\d{6,}\s+\d{2}\/\d{2}\/\d{4}$/.test(lines[j]) && !PAGE_RE.test(lines[j]) && desc.length < 200) { desc = desc.endsWith("-") ? desc + lines[j] : (desc ? desc + " " : "") + lines[j]; j++; }
+      desc = squash(desc);
+      const type = PJE_TYPES.find(t => desc.toLowerCase().endsWith(t.toLowerCase())) || "";
+      const name = squash(type ? desc.slice(0, desc.length - type.length) : desc) || type;
+      index[m[1]] = { id: m[1], date: m[2], name, official: type || name };
+    }
+    return Object.keys(index).length ? { meta, index } : null;
+  }
+
   // Cópia integral do PJe: um PDF só com todas as peças. Cada página traz
   // "Num. <id> - Pág. <n>"; quando o id muda, começa outra peça.
   function splitPje(doc) {
@@ -184,18 +214,33 @@
       if (!cur.sign) { const sg = part.match(PJE_SIGN); if (sg) cur.sign = { by: squash(sg[1]), date: sg[2] }; }
     }
     if (new Set(pieces.map(p => p.id).filter(Boolean)).size < 2) return [doc];
-    return pieces.map(p => ({ name: `${doc.name} · ID ${p.id || "s/n"}`, file: doc.name, text: p.pages.join("\n"), pjeId: p.id, signed: p.sign, pages: p.pages.length }));
+    const cover = pjeCover(doc.text.split(/⟦p\. \d+⟧/).slice(0, 4).join("\n⟦p. 0⟧\n"));
+    return pieces.map(p => {
+      const text = p.pages.join("\n");
+      if (!p.id && cover && /\bId\.\s+Data\s+Documento\s+Tipo\b/.test(text)) return { name: `${doc.name} · capa`, file: doc.name, text, pjeId: null, cover: true, coverMeta: cover.meta, pages: p.pages.length };
+      const ix = cover && p.id ? cover.index[p.id] : null;
+      return { name: `${doc.name} · ID ${p.id || "s/n"}`, file: doc.name, text, pjeId: p.id, signed: p.sign || (ix ? { by: "", date: ix.date } : null), indexed: ix, pages: p.pages.length };
+    });
   }
   function prepare(docs) {
     docs = docs.flatMap(splitPje);
     const bp = boilerplateLines(docs);
-    return docs.map(d => ({ ...d, type: classify(d.pjeId ? "" : d.name, d.text), title: title(d.text, bp), sentences: sentences(d.text, bp) }));
+    return docs.map(d => {
+      if (d.cover) return { ...d, type: "Capa do processo", title: "Capa e índice do PJe", sentences: [] };
+      let type = classify(d.pjeId ? "" : d.name, d.text), ttl = title(d.text, bp);
+      if (d.indexed) {
+        const off = d.indexed.official.toLowerCase();
+        type = /\binicial\b/i.test(d.indexed.name) && /peti/i.test(off) ? "Petição inicial" : PJE_MAP[off] || (/peti|manifesta|ciência/.test(off) ? "Petição" : type);
+        ttl = d.indexed.name && d.indexed.name.toLowerCase() !== off ? d.indexed.name : d.indexed.official;
+      }
+      return { ...d, type, title: ttl, official: d.indexed ? d.indexed.official : null, sentences: sentences(d.text, bp) };
+    });
   }
   function mainYear(doc) {
     const c = {};
     for (const s of doc.sentences) {
       for (const m of s.text.matchAll(DATE_TEXT())) c[m[3]] = (c[m[3]] || 0) + 1;
-      for (const m of s.text.matchAll(DATE_NUM())) c[m[3]] = (c[m[3]] || 0) + 1;
+      for (const m of s.text.matchAll(DATE_NUM())) c[m[4]] = (c[m[4]] || 0) + 1;
     }
     const best = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
     return best ? +best[0] : null;
@@ -204,11 +249,12 @@
     const events = [], deadlines = [], seen = new Set(), seenDl = new Set();
     const hasCourt = prepared.some(d => COURT.includes(d.type));
     for (const doc of prepared) {
+      if (doc.cover || doc.type === "Documento") continue; // capa e anexos (provas, pesquisas) não entram na cronologia
       const year = mainYear(doc);
       for (const s of doc.sentences) {
         const t = s.text, found = [];
-        if (DATELINE.test(t)) continue;
-        for (const m of t.matchAll(DATE_NUM())) found.push([+m[1], +m[2], +m[3], {}]);
+        if (DATELINE.test(t) || SIGNLINE.test(t) || CITATION.test(t) || !/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9"“(…]/.test(t)) continue;
+        for (const m of t.matchAll(DATE_NUM())) found.push([+m[1], +m[3], +m[4], {}]);
         for (const m of t.matchAll(DATE_TEXT())) { const mo = MONTHS[normalize(m[2])]; if (mo) found.push([+m[1], mo, +m[3], {}]); }
         const ranges = [];
         for (const m of t.matchAll(DATE_RANGE())) {
@@ -236,9 +282,16 @@
     for (const doc of prepared) if (doc.signed) {
       const [d, mo, y] = doc.signed.date.split("/").map(Number);
       const first = doc.sentences[0];
-      events.push({ date: doc.signed.date, iso: `${y}-${pad(mo)}-${pad(d)}`, event: `Juntada: ${doc.title && normalize(doc.title) !== normalize(doc.type) ? sentenceCase(doc.title) : doc.type}.`, source: doc.name, page: first ? first.page : +(doc.text.match(/⟦p\. (\d+)⟧/) || [0, 1])[1], doc_type: doc.type, kind: "juntada" });
+      events.push({ date: doc.signed.date, iso: `${y}-${pad(mo)}-${pad(d)}`, event: `Juntada: ${doc.official ? (doc.title && normalize(doc.title) !== normalize(doc.official) ? `${sentenceCase(doc.title)} (${doc.official})` : doc.official) : doc.title && normalize(doc.title) !== normalize(doc.type) ? sentenceCase(doc.title) : doc.type}.`, source: doc.name, page: first ? first.page : +(doc.text.match(/⟦p\. (\d+)⟧/) || [0, 1])[1], doc_type: doc.type, kind: "juntada" });
     }
     events.sort((a, b) => a.iso.localeCompare(b.iso) || (a.kind === "juntada" ? -1 : 0) - (b.kind === "juntada" ? -1 : 0) || a.source.localeCompare(b.source));
+    // Vários anexos juntados no mesmo dia viram uma linha só.
+    for (let i = events.length - 1; i > 0; i--) {
+      const a = events[i - 1], b = events[i];
+      if (a.kind === "juntada" && b.kind === "juntada" && a.date === b.date && a.doc_type === "Documento" && b.doc_type === "Documento") {
+        a.count = (a.count || 1) + (b.count || 1); a.event = `Juntada de ${a.count} documentos (anexos), a partir da p. ${a.page}.`; events.splice(i, 1);
+      }
+    }
     return { events, deadlines };
   }
   function factDates(doc) {
@@ -247,9 +300,9 @@
       const t = normalize(s.text);
       for (const stem of FACT_STEMS) for (const v of t.matchAll(new RegExp(`\\b${stem}\\w*`, "g"))) {
         const w = t.slice(v.index + v[0].length, v.index + v[0].length + 40);
-        let m = DATE_TEXT().exec(w), mo;
-        if (m) mo = MONTHS[m[2]]; else { m = DATE_NUM().exec(w); if (m) mo = +m[2]; }
-        if (m && mo) (out[stem] = out[stem] || new Set()).add(fmt(+m[1], mo, m[3]));
+        let m = DATE_TEXT().exec(w), mo, yr;
+        if (m) { mo = MONTHS[m[2]]; yr = m[3]; } else { m = DATE_NUM().exec(w); if (m) { mo = +m[3]; yr = m[4]; } }
+        if (m && mo) (out[stem] = out[stem] || new Set()).add(fmt(+m[1], mo, yr));
       }
     }
     return out;
@@ -291,13 +344,14 @@
   }
   const ACT_WORDS = ["julgo", "defiro", "indefiro", "determino", "designo", "fixo", "condeno", "homologo", "cite-se", "intime", "especifiquem", "certifico", "nao houve acordo", "ficam as partes", "concedo", "recebo"];
   function docSummary(d) {
+    if (d.cover) { const m = d.coverMeta || {}; return { name: d.name, type: "Capa do processo", title: "Capa e índice do PJe", id: null, signed: null, summary: [m.number && `Processo ${m.number}`, m.cls, m.court, m.subject && `Assunto: ${m.subject}`, m.value && `Valor da causa: ${m.value}`, (m.parties || []).length && `Partes: ${m.parties.map(p => `${p.name} (${p.role.toLowerCase()})`).join("; ")}`].filter(Boolean).join(" · "), process: m.number, pages: (d.text.match(/⟦p\. /g) || []).length, first: 1, last: (d.text.match(/⟦p\. /g) || []).length }; }
     const ok = d.sentences.filter(s => cleanSentence(s.text) && !BOILER.test(s.text));
     const keys = COURT.includes(d.type) ? ACT_WORDS : CLAIM_WORDS.concat(DEFENSE_WORDS, ["contrato"]);
     const chosen = ok.find(s => keys.some(k => normalize(s.text).includes(k))) || ok[0];
     const p = d.text.match(CNJ), pages = [...d.text.matchAll(/⟦p\. (\d+)⟧/g)].map(m => +m[1]);
     return { name: d.name, type: d.type, title: d.title && normalize(d.title) !== normalize(d.type) ? sentenceCase(d.title) : "", id: d.pjeId || null, signed: d.signed ? d.signed.date : null,
       summary: chosen ? short(chosen.text) : (d.sentences.length ? "Texto com muitos erros de leitura (provavelmente digitalizado). Abra o original." : "Sem texto legível. Abra o original."),
-      process: p ? p[0] : null, pages: pages.length || 1, first: pages[0] || 1, last: pages[pages.length - 1] || 1 };
+      official: d.official || null, process: p ? p[0] : null, pages: pages.length || 1, first: pages[0] || 1, last: pages[pages.length - 1] || 1 };
   }
 
   const TASKS = {
@@ -305,11 +359,41 @@
     organizacao: "Organização dos documentos", riscos: "Mapa de riscos",
   };
 
+  const toIso = d => d.split("/").reverse().join("");
+  function dateIn(t) {
+    let m = DATE_NUM().exec(t); if (m && validDate(+m[1], +m[3], +m[4])) return fmt(+m[1], +m[3], +m[4]);
+    m = DATE_TEXT().exec(t); if (m && MONTHS[normalize(m[2])]) return fmt(+m[1], MONTHS[normalize(m[2])], +m[3]);
+    return null;
+  }
+  // Audiência designada: procura nos atos do juízo a frase que marca a audiência e a data.
+  function hearingFrom(core, ordered) {
+    const found = [], RANK = { "Ato ordinatório": 3, "Decisão": 3, "Despacho": 3, "Ata de audiência": 3, "Sentença": 3, "Intimação": 1, "Certidão": 1, "Mandado": 0 };
+    for (const d of core) if (COURT.includes(d.type)) for (const s of d.sentences) {
+      if (!/audi[êe]ncia/i.test(s.text) || !/design|redesign|marcad|para o dia|realiza/i.test(s.text)) continue;
+      const date = dateIn(s.text); if (date) found.push({ date, s, d });
+    }
+    if (!found.length) return null;
+    const h = found.sort((a, b) => toIso(a.date).localeCompare(toIso(b.date)) || (RANK[a.d.type] || 0) - (RANK[b.d.type] || 0) || (/design/i.test(a.s.text) ? 1 : 0) - (/design/i.test(b.s.text) ? 1 : 0)).pop();
+    const lastPiece = ordered.filter(d => d.signed).map(d => d.signed.date).sort((a, b) => toIso(a).localeCompare(toIso(b))).pop();
+    const future = !lastPiece || toIso(h.date) >= toIso(lastPiece);
+    return { risk: future ? `Audiência marcada para ${h.date}` : `Audiência de ${h.date}`, level: future ? "alto" : "médio", action: future ? "Preparar a audiência: confirmar data, hora, forma (presencial ou virtual) e quem vai comparecer." : "A data já passou em relação à última peça do arquivo: conferir se houve ata e o que foi decidido.", quote: short(h.s.text, 320), source: h.d.name, page: h.s.page, date: h.date };
+  }
+  // Citação ou intimação que não deu certo (réu não localizado etc.).
+  function citationFrom(ordered) {
+    const NEG = /n[ãa]o (?:foi |fora |restou )?(?:localizad|encontrad)|deixei de (?:citar|intimar)|(?:cita[çc][ãa]o|dilig[êe]ncia|mandado)[^.]{0,40}(?:infrut[íi]fer|negativ|sem [êe]xito)|n[ãa]o reside|mudou-se|endere[çc]o (?:incorreto|inexistente)|n[ãa]o ter sido poss[íi]vel (?:citar|localizar)/i;
+    let last = null;
+    for (const d of ordered) if (!d.cover && d.type !== "Documento") for (const s of d.sentences) if (NEG.test(s.text) && /cit|intim|mandado|r[ée]u|requerid/i.test(s.text)) last = { d, s };
+    if (!last) return null;
+    return { risk: "Citação ou intimação sem sucesso", level: "alto", action: "Conferir se a parte já foi citada. Enquanto não for, o processo não anda: ver os novos endereços pedidos e o resultado das diligências.", quote: short(last.s.text, 320), source: last.d.name, page: last.s.page };
+  }
+
   function analyze(docs, task) {
     const prepared = prepare(docs);
     const { events, deadlines } = timeline(prepared);
     const pending = pendingFrom(events, deadlines, prepared);
-    const contr = controverted(prepared);
+    const core = prepared.filter(d => !d.cover && d.type !== "Documento");
+    const coverMeta = (prepared.find(d => d.cover) || {}).coverMeta || null;
+    const contr = controverted(core);
     const procs = [...new Set(docs.map(d => (d.text.match(CNJ) || [])[0]).filter(Boolean))];
     if (procs.length > 1) pending.unshift(`Atenção: os arquivos parecem ser de processos diferentes (${procs.join(" e ")}). Os resultados abaixo misturam os dois. Rode um processo de cada vez.`);
     const out = { task, title: TASKS[task], mode: "local", sources: docs.map(d => d.name), pieces: prepared.length, pending, processes: procs };
@@ -335,29 +419,35 @@
       const recent = deadlines.filter(d => recentDocs.includes(d.source)).slice(-4);
       for (const d of recent) items.push({ risk: `Prazo de ${d.deadline}`, level: "alto", action: "O texto não diz quando o prazo começa: conferir a data da intimação ou da ciência no PJe e anotar o vencimento.", quote: d.event, source: d.source, page: d.page });
       if (deadlines.length > recent.length) items.push({ risk: recent.length ? "Outros prazos citados no processo" : "Prazos citados no processo", level: recent.length ? "médio" : "alto", action: `${deadlines.length - recent.length === 1 ? "Há mais 1 prazo em peça anterior" : `Há mais ${deadlines.length - recent.length} prazos em peças anteriores`}, provavelmente já vencidos. A lista completa está na cronologia.` });
-      const exc = (() => { for (const d of prepared) for (const s of d.sentences) { const n = normalize(s.text); if (n.includes("forca maior") || n.includes("caso fortuito")) return { d, s }; } return null; })();
+      const exc = (() => { for (const d of core) for (const s of d.sentences) { const n = normalize(s.text); if (n.includes("forca maior") || n.includes("caso fortuito")) return { d, s }; } return null; })();
       if (exc) items.push({ risk: "Excludente de responsabilidade alegada", level: "alto", action: "Força maior ou caso fortuito aparece no processo: avaliar a prova do evento e da sua inevitabilidade.", quote: short(exc.s.text), source: exc.d.name, page: exc.s.page });
-      const money = []; for (const d of prepared) for (const s of d.sentences) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!money.some(x => x.v === v)) money.push({ v, d, s }); }
+      const hearing = hearingFrom(core, ordered);
+      const cit = citationFrom(ordered);
+      if (cit) items.unshift(cit);
+      if (hearing) items.unshift(hearing);
+      const money = []; for (const d of core) for (const s of d.sentences.filter(x => /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9"“(]/.test(x.text))) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!money.some(x => x.v === v)) money.push({ v, d, s }); }
       if (money.length) { const top = money.slice().sort((a, b) => parseFloat(b.v.replace(/[^\d,]/g, "").replace(",", ".")) - parseFloat(a.v.replace(/[^\d,]/g, "").replace(",", "."))).slice(0, 3);
         items.push({ risk: "Valores em discussão", level: "médio", action: `${money.length} valor(es) diferentes no processo. Os maiores: ${top.map(x => `${x.v} (p. ${x.s.page})`).join(", ")}. Validar cálculos e comprovantes.`, quote: short(top[0].s.text), source: top[0].d.name, page: top[0].s.page }); }
       if (!items.length) items.push({ risk: "Nenhum risco identificado automaticamente", level: "médio", action: "A Acta não achou decisão, prazo, excludente ou valor no texto. Revise o processo ou use a IA." });
       out.result = { items };
     } else {
       const byDate = prepared.map((d, i) => ({ d, i, k: d.signed ? d.signed.date.split("/").reverse().join("") : "" })).sort((a, b) => a.k.localeCompare(b.k) || a.i - b.i).map(x => x.d);
-      const statusDoc = byDate.reverse().find(d => ["Decisão", "Sentença", "Acórdão", "Ata de audiência"].includes(d.type) && pick(d, ORDER_WORDS, 1).length);
-      const orders = pick(statusDoc, ORDER_WORDS, 3);
+      const STATUS_WORDS = ORDER_WORDS.concat(["cite-se", "intime-se", "designo", "diligencie", "redesigno"]);
+      const statusDoc = byDate.reverse().find(d => ["Decisão", "Sentença", "Acórdão", "Ata de audiência", "Despacho", "Ato ordinatório"].includes(d.type) && pick(d, STATUS_WORDS, 1).length);
+      const orders = pick(statusDoc, STATUS_WORDS, 3);
       const types = {}; prepared.forEach(d => types[d.type] = (types[d.type] || 0) + 1);
       out.result = {
         summary: (() => {
           const signed = byDate.filter(d => d.signed).reverse(), first = signed[0], last = signed[signed.length - 1];
-          const head = prepared.length > docs.length ? `O processo tem ${prepared.length} peças.` : `Foram lidos ${prepared.length} documento(s): ${Object.entries(types).map(([t, n]) => `${n > 1 ? n + " " : ""}${t.toLowerCase()}`).join(", ")}.`;
+          const head = coverMeta ? `${coverMeta.cls ? sentenceCase(coverMeta.cls) : "Processo"}${coverMeta.court ? ` na ${coverMeta.court}` : ""}, com ${core.length + prepared.filter(d => d.type === "Documento").length} peças.` : prepared.length > docs.length ? `O processo tem ${prepared.length} peças.` : `Foram lidos ${prepared.length} documento(s): ${Object.entries(types).map(([t, n]) => `${n > 1 ? n + " " : ""}${t.toLowerCase()}`).join(", ")}.`;
           const span = first && last && first !== last ? ` A primeira é ${first.type.toLowerCase()} de ${first.signed.date}; a mais recente é ${(sentenceCase(last.title) || last.type).toLowerCase()} de ${last.signed.date}.` : "";
           const after = statusDoc ? byDate.slice().reverse().slice(byDate.slice().reverse().indexOf(statusDoc) + 1).filter(d => !["Certidão", "Intimação"].includes(d.type)) : [];
-          return head + span + (after.length ? ` Depois da última ${statusDoc.type.toLowerCase()}, veio: ${after.map(d => (sentenceCase(d.title) || d.type).toLowerCase() + (d.signed ? ` (${d.signed.date})` : "")).join(", ")}.` : "");
+          return head + span + (after.length ? ` Depois ${statusDoc.type === "Ata de audiência" ? "da última ata de audiência" : `do último ato do juízo (${statusDoc.type.toLowerCase()})`}, veio: ${after.slice(0, 6).map(d => (d.official || sentenceCase(d.title) || d.type).toLowerCase() + (d.signed ? ` (${d.signed.date})` : "")).join(", ")}${after.length > 6 ? ` e mais ${after.length - 6}` : ""}.` : "");
         })(),
+        case_info: coverMeta, hearing: hearingFrom(core, byDate.slice().reverse()),
         status: orders.length ? short(orders.map(s => s.text).join(" "), 420) : "Nenhuma decisão entre os documentos enviados.",
         status_source: orders.length ? `${statusDoc.name}, p. ${orders[0].page}` : null,
-        amounts: amounts(prepared), amount_list: (() => { const l = []; for (const d of prepared) for (const s of d.sentences) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!l.some(x => x.value === v) && l.length < 8) l.push({ value: v, text: short(s.text, 200), source: d.name, page: s.page }); } return l; })(), pieces: prepared.length, last_event: events[events.length - 1] || null, controverted: contr,
+        amounts: amounts(core), amount_list: (() => { const l = []; for (const d of core) for (const s of d.sentences.filter(x => /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9"“(]/.test(x.text))) for (const m of s.text.matchAll(MONEY())) { const v = squash(m[0]).replace(/R\$\s*/, "R$ "); if (!l.some(x => x.value === v) && l.length < 8) l.push({ value: v, text: short(s.text, 200), source: d.name, page: s.page }); } return l; })(), pieces: prepared.length, last_event: events[events.length - 1] || null, controverted: contr,
         documents: prepared.map(docSummary),
       };
     }
@@ -374,6 +464,11 @@
   const COMPANY = new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,5})\\s+(Ltda\\.?|S\\.A\\.?|S\\/A|EIRELI|EPP|ME)(?=[\\s,.;)]|$)`, "g");
   const ROLE = new RegExp(`\\b(?:Autora?|Réu?|Ré|Requerente|Requerid[oa]|Reclamante|Reclamad[oa]|Exequente|Executad[oa]|Apelante|Apelad[oa]|Agravante|Agravad[oa]|Testemunha|Cliente|Advogad[oa])\\s*:\\s*(${WORD}(?:${CONNECT}${WORD}){0,5})`, "g");
   const TITLE = new RegExp(`\\b(?:Sr\\.|Sra\\.|Dr\\.|Dra\\.|senhora?)\\s+(${WORD}(?:${CONNECT}${WORD}){0,4})`, "g");
+  const CAPW = "[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ'-]+", CAPNAME = `${CAPW}(?:\\s+(?:DA|DE|DO|DAS|DOS|E)?\\s*${CAPW}){1,5}`;
+  const PJE_PARTY = new RegExp(`^(${CAPNAME})(?:\\s*-\\s*[A-Z]{2,6})?\\s*\\((?:AUTORA?|R[ÉE]U?|R[ÉE]|REQUERENTE|REQUERID[OA]|EXEQUENTE|EXECUTAD[OA]|IMPETRANTE|IMPETRAD[OA]|RECLAMANTE|RECLAMAD[OA]|APELANTE|APELAD[OA]|TERCEIRO[^)]*|ADVOGAD[OA]|INTERESSAD[OA])\\)`, "gm");
+  const AGAINST = new RegExp(`(?:em face d[eoa]s?|contra|requerid[oa]|investigad[oa]|denunciad[oa])\\s+(${CAPNAME})`, "g");
+  const SIGNER = new RegExp(`(?:[Aa]ssinad[oa] (?:eletronicamente|digitalmente) por|[Dd]igitalmente por|[Pp]rotocolado por|[Ll]ogin e? ?senha por|[Ss]ervidor(?:a)?|[Pp]rocurador(?:a)? da República)\\s*:?\\s*\\(?(${CAPNAME})`, "g");
+  const INSTITUTION = /\b(MINIST[ÉE]RIO|P[ÚU]BLICO|UNI[ÃA]O|ESTADO|MUNIC[ÍI]PIO|INSTITUTO|UNIVERSIDADE|FAZENDA|DEFENSORIA|ADVOCACIA|PROCURADORIA|JUSTI[ÇC]A|TRIBUNAL|SE[ÇC][ÃA]O|VARA|FEDERAL|CAIXA|BANCO|RECEITA|PODER|JUDICI[ÁA]RIO|CONSELHO|SECRETARIA|GOVERNO|EMPRESA|COMPANHIA)\b/;
   const GENERIC = new Set("tecnologia logística logistica comércio comercio serviços servicos indústria industria banco companhia empresa sociedade grupo brasil brasileira transportes construtora engenharia educacional participações participacoes holding consultoria administradora seguros telecom energia saúde saude distribuidora alimentos nacional geral digital solutions soluções solucoes global padaria".split(" "));
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -394,11 +489,39 @@
       codeFor("PARTE", m[0], [m[0], base, ...toks]);
     }
     const covered = n => [...repl.keys()].some(k => k.length >= 4 && (n.includes(k) || k.includes(n)));
-    for (const re of [ROLE, TITLE]) for (const m of joined.matchAll(re)) if (!covered(m[1])) codeFor("PESSOA", m[1]);
+    const lowerWords = new Set((joined.match(/(?<![A-Za-zÀ-ÿ])[a-záéíóúâêôãõçàü]{3,}(?![A-Za-zÀ-ÿ])/g) || []));
+    // Variantes do mesmo nome: em maiúsculas, com iniciais maiúsculas e só primeiro + último nome.
+    const titleCase = n => n.toLowerCase().replace(/(^|\s)(\S)/g, (a, b, c) => b + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, w => w.toLowerCase());
+    const person = name => {
+      name = name.trim().replace(/\s+/g, " ");
+      if (name.split(" ").length < 2 || INSTITUTION.test(name.toUpperCase()) || covered(name)) return;
+      const parts = name.split(" ").filter(w => !/^(da|de|do|das|dos|e)$/i.test(w));
+      const short = parts.length > 2 ? `${parts[0]} ${parts[parts.length - 1]}` : null;
+      const al = [name, name.toUpperCase(), titleCase(name)];
+      if (short) al.push(short, short.toUpperCase(), titleCase(short));
+      // Primeiro nome e sobrenomes raros também viram código (o nome pode aparecer quebrado ou colado em outra palavra).
+      for (const w of parts) if (w.length >= 4 && !lowerWords.has(w.toLowerCase())) al.push(w.toUpperCase(), titleCase(w));
+      codeFor("PESSOA", name.toUpperCase() === name ? titleCase(name) : name, al);
+    };
+    for (const m of joined.matchAll(/\b\d{5}-?\d{3}\b(?!\d)/g)) if (/CEP|cep/.test(joined.slice(Math.max(0, m.index - 12), m.index)) || /^\d{5}-\d{3}$/.test(m[0])) codeFor("CEP", m[0]);
+    for (const m of joined.matchAll(/\b(?:RUA|AVENIDA|AV\.?|TRAVESSA|ESTRADA|RODOVIA|Rua|Avenida|Av\.|Travessa|Estrada)\s+[^,\n]{3,60},?\s*(?:n[º°o]\.?\s*)?\d{1,5}/g)) codeFor("ENDERECO", m[0]);
+    for (const re of [ROLE, TITLE]) for (const m of joined.matchAll(re)) person(m[1]);
+    for (const re of [PJE_PARTY, AGAINST, SIGNER]) for (const m of joined.matchAll(re)) person(m[1]);
+    // Nome em maiúsculas solto no texto: só conta se nenhuma das palavras aparece em minúsculas no
+    // próprio processo (palavras comuns como VALOR ou CAUSA aparecem; nomes próprios não).
+    for (const m of joined.matchAll(new RegExp(`(?<![\\wÀ-ÿ])(${CAPNAME})(?![\\wÀ-ÿ])`, "g"))) {
+      const toks = m[1].split(/\s+/).filter(w => !/^(DA|DE|DO|DAS|DOS|E)$/.test(w));
+      if (toks.length >= 2 && !/^(RUA|AVENIDA|AV|TRAVESSA|ESTRADA|RODOVIA|PRA[ÇC]A|EDIF[ÍI]CIO|BAIRRO)$/.test(toks[0]) && toks.every(w => w.length >= 3 && !lowerWords.has(w.toLowerCase()))) person(m[1]);
+    }
     const ordered = [...repl.keys()].sort((a, b) => b.length - a.length);
+    const pattern = v => {
+      if (!/^[A-Za-zÀ-ÿ]/.test(v)) return new RegExp(esc(v).replace(/\s+/g, "\\s+"), "g");
+      const body = esc(v).replace(/\s+/g, "\\s+"), caps = v === v.toUpperCase();
+      return new RegExp(`(?<![A-Za-zÀ-ÿ])${body}${caps ? "(?![a-zà-ÿ])" : "(?![A-Za-zÀ-ÿ])"}`, "g");
+    };
     const out = texts.map(t => {
       for (const v of ordered) {
-        const re = /^\w/.test(v) ? new RegExp(`(?<![\\wÀ-ÿ])${esc(v)}(?![\\wÀ-ÿ])`, "g") : new RegExp(esc(v), "g");
+        const re = pattern(v);
         t = t.replace(re, repl.get(v));
       }
       return t;
